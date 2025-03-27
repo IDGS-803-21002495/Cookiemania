@@ -1,5 +1,7 @@
 from flask import Flask, redirect, url_for, render_template
 from flask_mail import Mail
+from flask import g
+import os
 from models import db
 from models.usuario import Usuario  
 from config import DevelopmentConfig, mail
@@ -55,9 +57,10 @@ def home():
 def index():
     return render_template('index.html')
 
-# 7. Arranque de la aplicación
+
 if __name__ == '__main__':
+    csrf.init_app(app)
     with app.app_context():
-        db.create_all()  
+        db.create_all() 
 
     app.run(debug=True)
