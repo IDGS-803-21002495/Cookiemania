@@ -1,0 +1,152 @@
+{%extends "layout.html" %}
+
+{%block container%}
+<div class="p-4 sm:ml-64">
+    <div class="p-4 border-dashed rounded-lg dark:border-gray-700">
+        <h2 class="flex items-center text-3xl font-bold dark:text-gray-600">Proveedores</h2>
+        <p class="mb-5 text-gray-500 dark:text-gray-400">Registro de todos los proveedores</p>
+        <form method="POST" action="/registro" class="w-100 p-6 bg-white rounded-lg shadow-md mb-4">
+
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex flex-col w-1/2 pr-2">
+                    <div class="col-span-1 mb-2">
+                        <label for="username" class="block text-gray-700 font-medium mb-1">Nombre de proveedor</label>
+                        <input type="text" id="username" name="username" required
+                            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="text-left">
+                        <button type="submit"
+                            class="w-100 bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-200">
+                            Registrar
+                        </button>
+                    </div>
+
+                </div>
+
+                <div class="flex flex-col w-1/2 pl-2 ml-2 mb-8">
+                    <div class="mb-4">
+                        <label for="username" class="block text-gray-700 font-medium mb-2">Télefono</label>
+                        <input type="text" id="username" name="username" required
+                            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <form class="max-w-md mb-5">
+            <label for="default-search" class="mb-2 text-sm font-medium text-gray-400 sr-only text-white">Buscar</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                    </svg>
+                </div>
+                <input type="search" id="default-search"
+                    class="block w-full p-4 ps-10 text-sm text-gray-900  rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-100 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Search Mockups, Logos..." required />
+                <button type="submit" class="text-white absolute end-2.5 bottom-2.5 p-2.5 ms-2 text-sm font-medium text-white-100 bg-white border-yellow-100 
+                        rounded-lg hover:bg-yellow-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-yellow-300 
+                        dark:bg-white-100 dark:border-yellow-400 dark:hover:bg-yellow-400 dark:hover:text-white 
+                        dark:focus:ring-yellow-600 transition-colors duration-200">Search</button>
+            </div>
+        </form>
+
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-500">
+                <thead class="text-xs text-gray-00 uppercase bg-gray-50 dark:bg-gray-200 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">
+                            Nombre proveedor
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Télefono
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Editar
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Eliminar
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="odd:bg-white odd:dark:bg-gray-100 even:bg-gray-50 border-gray-200">
+                        <td class="px-6 py-4">
+                            Abarrotes "Tia rosa"
+                        </td>
+                        <td class="px-6 py-4">
+                            4771580978
+                        </td>
+                        <td class="px-6 py-4">
+                            <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white-100 bg-white border-yellow-100 
+                                rounded-lg hover:bg-yellow-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-yellow-300 
+                                dark:bg-white-100 dark:border-yellow-400 dark:hover:bg-yellow-400 dark:hover:text-white 
+                                dark:focus:ring-yellow-600 transition-colors duration-200">
+                                <svg class="w-6 h-6 text-white-500 transition-colors duration-200 group-hover:text-white"
+                                    aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z" />
+                                </svg>
+                            </button>
+                        </td>
+                        <td class="px-6 py-4">
+                            <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white-100 bg-white border-yellow-100 
+                                rounded-lg hover:bg-yellow-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-yellow-300 
+                                dark:bg-white-100 dark:border-yellow-400 dark:hover:bg-yellow-400 dark:hover:text-white 
+                                dark:focus:ring-yellow-600 transition-colors duration-200">
+                                <svg class="w-6 h-6 text-white-500 transition-colors duration-200 group-hover:text-white"
+                                    aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z" />
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="odd:bg-white odd:dark:bg-gray-100 even:bg-gray-50 border-gray-200">
+                        <td class="px-6 py-4">
+                            Tienda San Miguel
+                        </td>
+                        <td class="px-6 py-4">
+                            4774562314
+                        </td>
+                        <td class="px-6 py-4">
+                            <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white-100 bg-white border-yellow-100 
+                                rounded-lg hover:bg-yellow-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-yellow-300 
+                                dark:bg-white-100 dark:border-yellow-400 dark:hover:bg-yellow-400 dark:hover:text-white 
+                                dark:focus:ring-yellow-600 transition-colors duration-200">
+                                <svg class="w-6 h-6 text-white-500 transition-colors duration-200 group-hover:text-white"
+                                    aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z" />
+                                </svg>
+                            </button>
+                        </td>
+                        <td class="px-6 py-4">
+                            <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white-100 bg-white border-yellow-100 
+                                rounded-lg hover:bg-yellow-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-yellow-300 
+                                dark:bg-white-100 dark:border-yellow-400 dark:hover:bg-yellow-400 dark:hover:text-white 
+                                dark:focus:ring-yellow-600 transition-colors duration-200">
+                                <svg class="w-6 h-6 text-white-500 transition-colors duration-200 group-hover:text-white"
+                                    aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z" />
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{%endblock%}
