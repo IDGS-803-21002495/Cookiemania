@@ -1,10 +1,11 @@
-env
-node_modules
+env/
+__pycache__/
+*.pyc
+*.log
 .env
+.DS_Store
+node_modules/
 package-lock.json
 package.json
-__pycache__/
 *.pyc
 *.pyo
-__pycache__/
-*.pyc
