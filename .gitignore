@@ -1,6 +1,9 @@
+<<<<<<< HEAD
 env
 node_modules
 .env
+=======
+>>>>>>> master
 env/
 __pycache__/
 *.pyc
