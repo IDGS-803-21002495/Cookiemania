@@ -1,3 +1,14 @@
 env
 node_modules
 .env
+env/
+__pycache__/
+*.pyc
+*.log
+.env
+.DS_Store
+node_modules/
+package-lock.json
+package.json
+*.pyc
+*.pyo
