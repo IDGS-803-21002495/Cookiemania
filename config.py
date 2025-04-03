@@ -20,5 +20,5 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@127.0.0.1/cookiemania'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://cookiemania:maniagalletas2025@127.0.0.1/cookiemania2'
     SQLALCHEMY_TRACK_MODIFICATIONS = False

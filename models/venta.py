@@ -8,5 +8,5 @@ class Venta(db.Model):
     fecha_registro = db.Column(db.DateTime, nullable = False)
     fecha_entrega = db.Column(db.DateTime, nullable = False)
     estado = db.Column(db.Enum(EstadoVenta.PENDIENTE, EstadoVenta.CANCELADO, EstadoVenta.PRODUCCION, EstadoVenta.ENTREGADO), default = EstadoVenta.PENDIENTE)  # Se cambió 'name' por 'EstadoVenta'
-    vendedor_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable = False)
+    vendedor_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable = True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable = True)

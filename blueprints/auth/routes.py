@@ -2,37 +2,149 @@ import random
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
-
 from models import db
 from models.usuario import Usuario  
 from .forms import LoginForm, VerifyCodeForm
 from config import mail 
+import requests
+from functools import wraps
+from datetime import datetime, timedelta, timezone
+from flask import g
 
 from . import auth_bp
 
 ARCHIVO_TEMP = "tokentemporal.txt"
 
+
+RECAPTCHA_SECRET_KEY = '6Lcn7gQrAAAAAKdU0DzIzxEd7-gqWEdvEUolUB1V'
+RECAPTCHA_SITE_KEY = '6Lcn7gQrAAAAAPLf8pGCITzYP4JJPEQ0yUy_0c8L'
+
+# Lista de contraseñas comunes (puedes ampliarla según sea necesario)
+contraseñas_comunes = [
+    '123456', 'password', '123456789', '12345', '1234', 'qwerty', 'abc123',
+    'password1', '123123', 'admin', 'welcome', 'letmein', '0987654', 'admin123'
+]
+
+@auth_bp.route('/crear_usuario', methods=['POST'])
+def create_user():
+    # Obtener los datos del formulario
+    nombre = request.form['nombre']
+    username = request.form['username']
+    email = request.form['email']
+    password = request.form['password']
+    # Asignar rol automáticamente como "Cliente"
+    rol = 'CLIENTE'
+
+    print(password)
+
+    # Validar que no exista un usuario con ese nombre de usuario o correo electrónico
+    existing_user = Usuario.query.filter((Usuario.username == username) | (Usuario.email == email)).first()
+    if existing_user:
+        flash('El nombre de usuario o correo electrónico ya está registrado', 'error')
+        return redirect(url_for('auth.login')) 
+    
+    # Valirdar que la contraseña no sea comun 
+    if password in contraseñas_comunes: 
+        flash('Contraseña invalida, por favor, intente con otra.', 'error')
+        return redirect(url_for('auth.login')) 
+
+    # Crear una nueva instancia del usuario
+    nuevo_usuario = Usuario(
+        nombre=nombre,
+        username=username,
+        email=email,
+        password=password,  
+        rol=rol
+    )
+
+    # Guardar el nuevo usuario en la base de datos
+    db.session.add(nuevo_usuario)
+    db.session.commit()
+
+    # Iniciar sesión con el nuevo usuario si lo deseas (opcional)
+    login_user(nuevo_usuario)
+
+    # Redirigir a una página de éxito o al login
+    flash('Usuario creado con éxito!', 'success')
+    return redirect(url_for('auth.login'))
+
+def verify_recaptcha(recaptcha_response):
+    secret_key = "6Lcn7gQrAAAAAKdU0DzIzxEd7-gqWEdvEUolUB1V"
+    payload = {
+        'secret': secret_key,
+        'response': recaptcha_response
+    }
+    response = requests.post('https://www.google.com/recaptcha/api/siteverify', data=payload)
+    result = response.json()
+    return result.get('success', False)
+
+@auth_bp.before_request
+def before_request():
+    if 'user_id' in session:
+        # Verificar si la sesión ha expirado
+        if not session.get('last_activity'):
+            session['last_activity'] = datetime.now(timezone.utc)
+        else:
+            now = datetime.now(timezone.utc)
+            if (now - session['last_activity']) > timedelta(minutes=10):
+                flash("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.", "warning")
+                session.clear()  # Limpiar la sesión
+                return redirect(url_for('auth.login'))
+        session['last_activity'] = datetime.now(timezone.utc)  # Actualizar la última actividad
+
+def role_required(rol):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if current_user.rol != rol:
+                flash("No tienes permiso para acceder a esta página.", "danger")
+                return redirect(url_for('auth.login'))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     form_login = LoginForm()
+    
+    # Inicializar contador de intentos fallidos y tiempo de bloqueo
+    if 'intentos_fallidos' not in session:
+        session['intentos_fallidos'] = 0
+        session['bloqueo_hasta'] = None
+
+    # Obtener la hora actual con zona horaria consciente
+    now = datetime.now(timezone.utc)
+
+    # Verificar si el usuario está bloqueado
+    if session['bloqueo_hasta']:
+        bloqueo_hasta = datetime.fromisoformat(session['bloqueo_hasta'])
+
+        if now < bloqueo_hasta:
+            tiempo_restante = (bloqueo_hasta - now).seconds
+            flash(f"Acceso bloqueado. Intenta de nuevo en {tiempo_restante} segundos.", "danger")
+            return render_template('login.html', form=form_login)
+
     if request.method == 'POST':
         if form_login.validate_on_submit():
+            recaptcha_response = request.form.get('g-recaptcha-response')
+
+            if not recaptcha_response or not verify_recaptcha(recaptcha_response):
+                flash('Verificación de reCAPTCHA fallida. Intenta nuevamente.', 'danger')
+                return redirect(url_for("auth.login"))
+
             username = form_login.username.data
             password = form_login.password.data
 
-            # Buscamos el usuario en la base de datos
             user = Usuario.query.filter_by(username=username).first()
 
-            # Validamos credenciales 
-            if user and user.password == password:
-                # Generar código aleatorio de 6 dígitos
+            # Validar credenciales
+            if user and user.check_password(password):
+                session['intentos_fallidos'] = 0  # Reiniciar contador
                 code = random.randint(100000, 999999)
 
-                # Guardamos el token en un archivo temporal
                 with open(ARCHIVO_TEMP, "w", encoding="utf-8") as f:
                     f.write(str(code))
 
-                # Enviar el correo con el token
                 msg = Message(
                     "Código de Verificación - Cookiemania",
                     recipients=[user.email]
@@ -45,16 +157,23 @@ def login():
                     flash(f"Error al enviar correo: {e}", "danger")
                     return redirect(url_for('auth.login'))
 
-                # Guardamos el id en la sesion
                 session['temp_user_id'] = user.id
-
-                # solicitamos el token enviado
                 return redirect(url_for('auth.verify_code'))
             else:
-                flash("Usuario o contraseña incorrectos.", "danger")
+                # Incrementar intentos fallidos
+                session['intentos_fallidos'] += 1
+
+                if session['intentos_fallidos'] >= 3:
+                    # Bloquear por 5 minutos (almacenar como string ISO 8601)
+                    session['bloqueo_hasta'] = (now + timedelta(minutes=5)).isoformat()
+                    session['intentos_fallidos'] = 0  # Reiniciar intentos
+                    flash("Demasiados intentos fallidos. Intenta en 5 minutos.", "danger")
+                else:
+                    intentos_restantes = 3 - session['intentos_fallidos']
+                    flash(f"Intento fallido. Te quedan {intentos_restantes} intento(s).", "warning")
+
                 return redirect(url_for('auth.login'))
 
-    
     return render_template('login.html', form=form_login)
 
 @auth_bp.route('/verify_code', methods=['GET', 'POST'])
@@ -87,6 +206,7 @@ def verify_code():
 
                     flash("Verificación exitosa. ¡Bienvenido!", "success")
                     return redirect(url_for('index'))
+                    
                 else:
                     flash("Usuario no encontrado.", "danger")
                     return redirect(url_for('auth.login'))
@@ -96,8 +216,20 @@ def verify_code():
 
     return render_template('verify_code.html', form=form_verify)
 
-@auth_bp.route('/logout')
+
+@auth_bp.route('/logout', methods=['POST'])
+@login_required
 def logout():
+    if request.method == 'POST':
+        if current_user.is_authenticated:
+            # Obtener el usuario actual
+            user = Usuario.query.get(current_user.id)
+
+            if user:
+                # Actualizar el campo ultimo_inicio_sesion
+                user.ultimo_inicio_sesion = datetime.now()
+                db.session.commit()  # Guardar los cambios en la base de datos
+
     logout_user()       
     session.clear()     
     flash("Sesión cerrada correctamente.", "info")

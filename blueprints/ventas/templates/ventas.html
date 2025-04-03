@@ -1,58 +1,337 @@
-{%extends "layout.html" %}
+{% extends "layout.html" %}
 
-{%block container%}
+{% block container %}
+{% import "_macros.html" as macros %}
 
-    <div class="p-4 sm:ml-64">
-        <div class="p-4 border-dashed rounded-lg dark:border-gray-700">
-            <h2 class="flex items-center text-3xl font-bold dark:text-gray-600">Ventas</h2>
-            <p class="mb-10 text-gray-500 dark:text-gray-400">Realice el corte de ventas al finalizar el día</p>
+<div class="flex">
+    <main class="flex-1 p-6">
+        <!-- Lista de opciones -->
+        <div class="grid grid-cols-3 gap-4">
+            <div class="col-span-2">
+                <button type="button"
+                    class="px-5 py-2.5 text-sm font-semibold w-full text-yellow-800 inline-flex items-center bg-white hover:bg-yellow-800 focus:ring-4 focus:outline-none rounded-lg text-center border-yellow-400">
+                    <svg class="w-6 h-6 text-yellow-800 dark:text-yellow-800" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 25 25">
+                        <path fill="currentColor" d="M4 19v2c0 .5523.44772 1 1 1h14c.5523 0 1-.4477 1-1v-2H4Z" />
+                        <path fill="currentColor" fill-rule="evenodd"
+                            d="M9 3c0-.55228.44772-1 1-1h8c.5523 0 1 .44772 1 1v3c0 .55228-.4477 1-1 1h-2v1h2c.5096 0 .9376.38314.9939.88957L19.8951 17H4.10498l.90116-8.11043C5.06241 8.38314 5.49047 8 6.00002 8H12V7h-2c-.55228 0-1-.44772-1-1V3Zm1.01 8H8.00002v2.01H10.01V11Zm.99 0h2.01v2.01H11V11Zm5.01 0H14v2.01h2.01V11Zm-8.00998 3H10.01v2.01H8.00002V14ZM13.01 14H11v2.01h2.01V14Zm.99 0h2.01v2.01H14V14ZM11 4h6v1h-6V4Z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Corte de caja
+                </button>
+            </div>
+            <div class="">
+                <form action="{{ url_for('pedidos.index') }}" method="get">
+                    <button type="submit" 
+                    class="inline-flex w-full items-center px-5 py-2.5 text-sm font-medium text-right text-white bg-yellow-700 rounded-lg hover:bg-yellow-800 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-800">
+                    Pedidos
+                    <span
+                        class="inline-flex items-center justify-center w-4 h-4 ms-2 text-xs font-semibold text-yellow-800 bg-yellow-200 rounded-full">
+                        {{ total_pendientes }}
+                    </span>
+                </button>
+                </form>
+            </div>
+        </div>
 
-            <h3 class="flex items-center text-2xl font-bold dark:text-gray-600 mb-5">Tipos de venta</h3>
 
-            <div class="grid grid-cols-2 gap-4 max-w-md">
-                <!-- Card 1: Unidad -->
-                <div class="flex items-center justify-between p-5 bg-white shadow-md rounded-lg">
-                    <span class="text-lg font-semibold text-gray-700">Unidad</span>
-                    <img src="{{url_for('static',filename='img/unidad.jpg')}}" alt="Unidad" class="w-16 h-16">
+        <div class="mt-4">
+            <h1 class="text-lg font-semibold">Productos</h1>
+        </div>
+
+        <!-- Lista de productos -->
+        <div class="grid grid-cols-3 gap-6 mt-6">
+            {% for resultado in resultados %}
+            <div class="bg-white p-4 rounded-xl text-center shadow-md">
+                <div class="w-48 h-48 overflow-hidden rounded-md mx-auto">
+                    <img src="../../../static/img/mantequilla.jpg" class="w-full h-full object-cover">
                 </div>
+                <p class="font-semibold text-yellow-700">Galleta {{resultado.nombre}}</p>
+                <p class="font-extralight text-gray-500 pb-2 text-sm">{{resultado.gramaje}} gramos</p>
+                <ul class="items-end text-left px-5">
+                    <li class="pb-1">
+                        <div class="flex items-center space-x-4 rtl:space-x-reverse">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 truncate">
+                                    Paquete de 1 kg
+                                </p>
+                            </div>
+                            <div class="inline-flex items-center text-sm font-semibold text-gray-900">
+                                ${{resultado.precio_1000g}}
+                            </div>
+                        </div>
+                    </li>
+                    <li class="pb-1">
+                        <div class="flex items-center space-x-4 rtl:space-x-reverse">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 truncate">
+                                    Paquete de 700 g
+                                </p>
+                            </div>
+                            <div class="inline-flex items-center text-sm font-semibold text-gray-900">
+                                ${{resultado.precio_700g}}
+                            </div>
+                        </div>
+                    </li>
+                    <li class="pb-2">
+                        <div class="flex items-center space-x-4 rtl:space-x-reverse">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 truncate">
+                                    Unidad
+                                </p>
+                            </div>
+                            <div class="inline-flex items-center text-sm font-semibold text-gray-900">
+                                ${{resultado.unidad}}
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <button type="button"
+                    class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none"
+                    onclick="openModal('{{resultado.id}}')">
+                    Añadir al carrito
+                </button>
+            </div>
+            {%endfor%}
+        </div>
+    </main>
 
-                <!-- Card 2: Por peso -->
-                <div class="flex items-center justify-between p-5 bg-white shadow-md rounded-lg">
-                    <span class="text-lg font-semibold text-gray-700">Por peso</span>
-                    <img src="{{url_for('static',filename='img/peso.jpg')}}" alt="Por peso" class="w-16 h-16">
-                </div>
+    <!-- Carrito -->
+    <aside class="w-80 h-screen bg-white p-6 shadow-lg flex flex-col">
+        <h2 class="text-lg font-semibold">Orden</h2>
 
-                <!-- Card 3: Por dinero -->
-                <div class="flex items-center justify-between p-5 bg-white shadow-md rounded-lg">
-                    <span class="text-lg font-semibold text-gray-700">Por dinero</span>
-                    <img src="../static/img/dinero.jpg" alt="Por dinero" class="w-16 h-16">
-                </div>
-
-                <!-- Card 4: Paquete -->
-                <div class="flex items-center justify-between p-5 bg-white shadow-md rounded-lg">
-                    <span class="text-lg font-semibold text-gray-700">Paquete</span>
-                    <img src="{{url_for('static',filename='img/paquete.jpg')}}" alt="Paquete" class="w-16 h-16">
-                </div>
-                <div class="ml-auto right-0 top-0 p-5 w-80 bg-white shadow-lg rounded-lg absolute h-96 overflow-y-auto">
-                    <h4 class="text-xl font-semibold text-gray-400">Orden</h4>
-                    <div class="flex items-center justify-between p-5 bg-white shadow-md rounded-lg">
-                        <span class="text-lg font-semibold text-gray-700">Paquete</span>
-                        <img src="#" alt="Paquete" class="w-16 h-16">
+        <!-- Contenedor scrollable -->
+        <div class="mt-4 space-y-4 flex-1 overflow-y-auto">
+            {% if session.get('carrito') %}
+            {% for item in session['carrito'] %}
+            <div class="flex justify-between items-center bg-white p-4 rounded-lg "
+                style="border: 1.5px solid #d7dbdd;">
+                <div class="">
+                    <div class="">
+                        <form
+                            action="{{ url_for('venta.delete_product', id_product=item['id_galleta'], presentacion=item['presentacion']) }}"
+                            method="post">
+                            {{ form.csrf_token }}
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="text-red-600 hover:text-red-800">
+                                <svg class="w-4 h-4 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                    width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                    <path fill-rule="evenodd"
+                                        d="M8.586 2.586A2 2 0 0 1 10 2h4a2 2 0 0 1 2 2v2h3a1 1 0 1 1 0 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a1 1 0 0 1 0-2h3V4a2 2 0 0 1 .586-1.414ZM10 6h4V4h-4v2Zm1 4a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Zm4 0a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </form>
                     </div>
-                    <div class="flex items-center justify-between p-5 bg-white shadow-md rounded-lg mt-2">
-                        <span class="text-lg font-semibold text-gray-700">Paquete</span>
-                        <img src="#" alt="Paquete" class="w-16 h-16">
-                    </div>
-                    <div class="flex items-center justify-between p-5 bg-white shadow-md rounded-lg mt-2">
-                        <span class="text-lg font-semibold text-gray-700">Paquete</span>
-                        <img src="#" alt="Paquete" class="w-16 h-16">
-                    </div>
-                    <p class="text-gray-500 mt-2">Total:</p>
-                    <button class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg">Botón de Acción</button>
+                    <p class="text-base font-semibold text-gray-700 text-left rtl:text-right">Galleta {{ item['nombre']
+                        }}</p>
+                    <p class="text-xs text-gray-500 py-1">{{ item['presentacion'] }}</p>
+                    <p class="text-sm font-bold text-yellow-800 py-1">${{ item['subtotal'] }}</p>
                 </div>
-                
-            </div>        
+                <div class="flex items-center space-x-2">
+                    <form class="max-w-sm">
+                        <input type="number" id="number-input" aria-describedby="helper-text-explanation"
+                            value="{{ item['cantidad'] }}"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-20 p-1.5"
+                            required min="1" data-id="{{ item['id_galleta'] }}" data-modalidad="{{ item['modalidad'] }}"
+                            onkeydown="validateAndSubmit(event, this)" oninput="actualizar_item(this)"">
+
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p>No hay productos en el carrito.</p>
+            {% endif %}
+
+        </div>
+
+        <div class="mt-6 bg-gray-100 p-4 rounded-lg">
+            <p class="text-base font-semibold py-2">Total: ${{total}}</p>
+            <form action="{{url_for('venta.add_venta')}}" method="post">
+                {{ form.csrf_token }}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="w-full bg-yellow-500 py-3 rounded-lg text-white">Registrar venta</button>
+            </form>
+        </div>
+    </aside>
+
+</div>
+
+<!-- Modal -->
+<div id="exampleModal" class="fixed inset-0 z-50 hidden bg-white-200 bg-opacity-50 flex justify-center items-center">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md">
+        <div class="flex justify-between items-center p-4">
+            <button type="button" class="text-gray-600 hover:text-gray-800" onclick="closeModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="p-4">
+            <form class="max-w-sm mx-auto" action="{{url_for('venta.add_product')}}" method="post" novalidate>
+                <!-- Campos ocultos -->
+                {{ form.csrf_token }}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="id_galleta" id="id_galleta">
+
+                {{ macros.campoNuevo(form.modalidad, class="bg-white border border-gray-200 text-gray-900 rounded-lg
+                focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-300
+                dark:placeholder-gray-500 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500")
+                }}
+                {{ macros.campoNuevo(form.cantidad, class="bg-white border border-gray-200 text-gray-900 rounded-lg
+                focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-300
+                dark:placeholder-gray-500 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500")
+                }}
+
+                <div class="flex justify-end space-x-2 pt-3">
+                    <button type="button" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md"
+                        onclick="closeModal()">Close</button>
+                    <button type="submit" class="px-4 py-2 bg-yellow-800 text-white rounded-md">Añadir al
+                        carrito</button>
+                </div>
+            </form>
+
         </div>
     </div>
-    
-{%endblock%}
+</div>
+
+<div class="py-4 px-5">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <!-- Alerta Modal Fija -->
+    <div id="flashMessage" class="fixed inset-0 bg-white-200 bg-opacity-50 flex items-center justify-center z-50"
+        role="alert">
+        <div
+            class="flex items-center p-4 text-sm rounded-lg shadow-lg w-full max-w-sm {{ 'bg-green-200 text-green-600 border-green-400' if 'success' in messages[0][0] else 'bg-yellow-300 text-yellow-800 border-yellow-400' if 'warning' in messages[0][0] else 'bg-red-300 text-red-700 border-red-400' }}">
+            <!-- Icono de mensaje según categoría -->
+            <span class="font-medium">
+                {% for category, message in messages %}
+                {{ message }}
+                {% endfor %}
+            </span>
+            <!-- Botón de cerrar -->
+            <button type="button"
+                class="ml-auto -mx-1.5 -my-1.5 text-green-100 bg-transparent rounded-lg focus:ring-2 p-1.5 inline-flex items-center justify-center h-8 w-8"
+                onclick="closeAlert()">
+                <span class="sr-only">Close</span>
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 14 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                </svg>
+            </button>
+        </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+</div>
+
+
+<script>
+
+    function closeAlert() {
+        const alert = document.getElementById('flashMessage');
+        alert.style.display = 'none'; // Ocultar el mensaje flash al hacer clic en la X
+    }
+
+    function closeModal() {
+        document.getElementById("exampleModal").classList.add("hidden");
+    }
+
+    function openModal(id_galleta) {
+        document.getElementById("exampleModal").classList.remove("hidden");
+        document.getElementById("id_galleta").value = id_galleta;
+    }
+
+    function actualizar_item(inputElement) {
+        const cantidad = inputElement.value;
+        const id_galleta = inputElement.getAttribute('data-id');
+        const modalidad = inputElement.getAttribute('data-modalidad');
+
+         if (isNaN(cantidad) || cantidad <= 0) {
+            showFlashMessage('Por favor, ingrese una cantidad válida (número positivo).', 'danger');
+            return;  
+        }
+
+        // Construcción de la URL de forma dinámica
+        const url = `{{ url_for('venta.update_product', id_galleta='0', modalidad='default', cantidad='0') }}`.replace('0', id_galleta).replace('default', modalidad).replace('0', cantidad);
+
+        // Solicitud para modificar el producto
+        fetch(url, {
+            method: 'POST',
+            body: JSON.stringify({
+                id_galleta: id_galleta,
+                modalidad: modalidad,
+                cantidad: cantidad
+            }),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+
+                    // Redirigir a la misma página de ventas
+                    window.location.href = "{{ url_for('venta.index') }}";
+                } else {
+                    // Si la respuesta no es exitosa, mostramos un error
+                    return response.json().then(data => {
+                        console.error('Error:', data.error || 'Unknown error');
+                    });
+                }
+            })
+            .catch(error => {
+                // Mostrar un mensaje de error si la solicitud falla
+                console.error('Error en la solicitud:', error);
+            });
+    }
+
+    // Función para mostrar el mensaje flash
+    function showFlashMessage(message, type) {
+        const flashMessage = document.createElement('div');
+        flashMessage.id = 'flashMessage';
+        flashMessage.classList.add('fixed', 'top-0', 'left-0', 'right-0', 'bg-opacity-50', 'flex', 'justify-center', 'items-center', 'z-50');
+        flashMessage.innerHTML = `
+            <div class="flex items-center p-4 text-sm rounded-lg shadow-lg w-full max-w-sm ${type === 'danger' ? 'bg-red-300 text-red-700 border-red-400' : 'bg-green-200 text-green-600 border-green-400'}">
+                <span class="font-medium">${message}</span>
+                <button type="button" class="ml-auto -mx-1.5 -my-1.5 text-green-100 bg-transparent rounded-lg focus:ring-2 p-1.5 inline-flex items-center justify-center h-8 w-8" onclick="closeAlert()">
+                    <span class="sr-only">Close</span>
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                    </svg>
+                </button>
+            </div>
+        `;
+        document.body.appendChild(flashMessage);
+
+        // Mostrar el mensaje flash y esconderlo después de 5 segundos
+        setTimeout(() => {
+            flashMessage.style.display = 'none';
+        }, 5000);
+    }
+
+    function validateAndSubmit(event, inputElement) {
+        const cantidad = inputElement.value;
+
+        if (event.key === 'Enter') {
+            
+            if (isNaN(cantidad) || cantidad <= 0) {
+                event.preventDefault();  
+                showFlashMessage('Por favor, ingrese una cantidad válida (número positivo).', 'danger');
+                return;  
+            }
+
+            
+            actualizar_item(inputElement);
+            event.preventDefault();  
+        }
+    }
+
+</script>
+
+
+
+{% endblock%}
