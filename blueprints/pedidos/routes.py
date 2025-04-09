@@ -1,3 +1,4 @@
+import datetime
 from . import pedidos_bp
 from flask import render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
@@ -39,6 +40,8 @@ def recuperar_pedidos():
         .group_by(Venta.id, Usuario.nombre, Venta.estado, Venta.fecha_registro, DetalleVenta.tipo_venta, DetalleVenta.cantidad_presentacion, Galleta.nombre)
         .all()  
     )
+
+
 
     # Transformar la consulta en un diccionario anidado
     ventas_dict = {}

@@ -10,28 +10,56 @@ from models.enums import EstadoLote
 from models.mermaproducto import MermaProducto
 
 from models import db
-from sqlalchemy import func, case
+from sqlalchemy import func, case, and_
 from flask import flash
 from sqlalchemy.orm import aliased
 
 
-# Función para consultar la cantidad de galletas (Inventario)
 def getGalleta():
-    galletas = (db.session.query(
-        Galleta.id,
-        Galleta.nombre,
-        func.coalesce(func.sum(LoteProduccion.cantidad_disponible),
-                      0).label("cantidad_total"),
-        func.group_concat(LoteProduccion.estado_lote).label(
-            "estatus_lotes")  # Concatenar estados
+    # Subconsulta para obtener el estado más reciente por receta
+    subquery = (
+        db.session.query(
+            LoteProduccion.receta_id,
+            LoteProduccion.estado_lote,
+            func.row_number().over(
+                partition_by=LoteProduccion.receta_id,
+                order_by=LoteProduccion.fecha_produccion.desc()  # Ordenar por fecha descendente
+            ).label("row_num")
+        )
+        .filter(LoteProduccion.estado_lote != "CANCELADO")
+        .subquery()
     )
+
+    galletas = (
+        db.session.query(
+            Galleta.id,
+            Galleta.nombre,
+            Galleta.imagen,
+            func.coalesce(
+                func.sum(
+                    case(
+                        (LoteProduccion.estado_lote == EstadoLote.TERMINADO,
+                         LoteProduccion.cantidad_disponible),
+                        else_=0
+                    )
+                ), 0
+            ).label("cantidad_total"),
+            subquery.c.estado_lote.label("estatus_lote")  # Estado más reciente
+        )
         .outerjoin(Receta, Receta.galleta_id == Galleta.id)
         .outerjoin(LoteProduccion, LoteProduccion.receta_id == Receta.id)
-        .group_by(Galleta.id, Galleta.nombre)
-        .all())
+        .outerjoin(
+            subquery,
+            and_(
+                subquery.c.receta_id == Receta.id,
+                subquery.c.row_num == 1  # Solo el más reciente (fila 1)
+            )
+        )
+        .group_by(Galleta.id, Galleta.nombre, subquery.c.estado_lote, Galleta.imagen)
+        .all()
+    )
 
     return galletas
-
 # funcion para consultar la fecha de produccion y caducidad
 
 
@@ -201,7 +229,7 @@ def estatusGalleta():
     )
         .outerjoin(Receta, Receta.galleta_id == Galleta.id)
         .outerjoin(LoteProduccion, LoteProduccion.receta_id == Receta.id)
-        .filter(LoteProduccion.estado_lote != 'TERMINADO')
+        .filter(LoteProduccion.estado_lote != 'TERMINADO', LoteProduccion.estado_lote != 'CANCELADO')
         # Añadir estado_lote al group_by
         .group_by(Galleta.nombre, LoteProduccion.estado_lote, LoteProduccion.cantidad_disponible, LoteProduccion.id)
         .all())
@@ -269,8 +297,12 @@ def actualizarEstatus(lote_id, nuevo_estatus):
         # Actualizar el estado
         lote.estado_lote = nuevo_estatus
         db.session.commit()
+        # Cambia la línea del flash a:
+        flash(f"Estado actualizado a {nuevo_estatus}", "success")
 
-        flash(f"Estado actualizado a {nuevo_estatus.value}", "success")
+        # Y asegúrate que el estado se guarde como string:
+        lote.estado_lote = nuevo_estatus.value if hasattr(
+            nuevo_estatus, 'value') else nuevo_estatus
         return True
 
     except Exception as e:

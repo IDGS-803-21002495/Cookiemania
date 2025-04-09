@@ -44,6 +44,7 @@ def consulta_precios():
             'nombre': galleta.nombre,
             'gramaje': galleta.peso,
             'unidad': galleta.precio,
+            'imagen':galleta.imagen,
             'precio_1000g': precio_paquete_1000g,
             'unidades_1000g': unidades_completas_1000,
             'precio_700g': precio_paquete_700g,
@@ -55,7 +56,7 @@ def consulta_precios():
 def verificar_existencias(galleta_id): 
     # Usamos filter en lugar de filter_by
     existencias = db.session.query(
-        LoteProduccion.cantidad_disponible,
+        func.sum(LoteProduccion.cantidad_disponible).label('cantidad_disponible'),
         Galleta.nombre.label('galleta_nombre'),
         Galleta.id
     ).join(
@@ -63,7 +64,9 @@ def verificar_existencias(galleta_id):
     ).join(
         Galleta, Receta.galleta_id == Galleta.id
     ).filter(
-        Galleta.id == galleta_id  
+        Galleta.id == galleta_id
+    ).group_by(
+        Galleta.id
     ).first()
 
     return existencias
@@ -327,3 +330,6 @@ def add_venta():
     return redirect(url_for('venta.index'))  
     
     
+@ventas_bp.route('/corte_venta', methods = ['GET', 'POST'])
+def corte_venta():
+    return render_template('corte_venta.html')

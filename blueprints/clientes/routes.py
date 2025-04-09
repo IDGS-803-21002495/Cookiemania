@@ -29,6 +29,7 @@ def consulta_precios():
             'nombre': galleta.nombre,
             'gramaje': galleta.peso,
             'unidad': galleta.precio,
+            'imagen':galleta.imagen,
             'precio_1000g': precio_paquete_1000g,
             'unidades_1000g': unidades_completas_1000,
             'precio_700g': precio_paquete_700g,
@@ -265,12 +266,12 @@ def add_pedido():
     for item in carrito:
         if item['modalidad'] == 'Unidad':
             tipo_venta = TipoVenta.UNIDAD
-            cantidad_presentacion = 1
+            cantidad_presentacion = item['cantidad']
             cantidad_unidades = item['cantidades_unidades']
 
         elif item['modalidad'] == 'Gramos':
             tipo_venta = TipoVenta.GRAMAJE
-            cantidad_presentacion = 1
+            cantidad_presentacion = item['cantidad']
             cantidad_unidades = item['cantidades_unidades']
 
         elif item['modalidad'] == 'Paquete1':

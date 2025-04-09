@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+
+{% block container %}
+{% import "_macros.html" as macros %}
+<div>
+    <div>
+        <p>Corte de venta</p>
+        <p>Fecha de corte {{fecha_actual}}</p>
+    </div>
+    <div>
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-500">
+            <thead class="text-xs text-gray-00 uppercase bg-gray-200 dark:bg-gray-200 dark:text-gray-400">
+                <tr>
+                    <th scope="col" class="px-6 py-3">
+                        Hora de movimiento
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Tipo de movimiento
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Concepto
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Total
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pago_proveedor in pagos_proveedores %}
+                <tr class="odd:bg-white odd:dark:bg-gray-100 even:bg-gray-50 border-gray-200">
+                    <td class="px-6 py-4">
+                    {{pago_proveedor.id}}
+                    </td>
+                    <td class="px-6 py-4">
+                        {{pago_proveedor.lote_insumo_id}}
+                    </td>
+                    <td class="px-6 py-4">
+                        {{pago_proveedor.fecha}}
+                    </td>
+                    <td class="px-6 py-4">
+                        {{pago_proveedor.nombre}}
+                    </td>
+                    <td class="px-6 py-4">
+                        ${{pago_proveedor.monto}}
+                    </td>
+
+                </tr>
+                {%endfor%}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -21,8 +21,11 @@ def registrarUsuario(nombre, username, email, rol, password):
         username=username,
         email=email,
         rol=rol,
-        password = password
+        password=password
     )
+
+ # Usar el método set_password para guardar la contraseña de forma segura
+    nuevo_Usuario.set_password(password)
 
     # Guardar el nuevo usuario en la base de datos
     db.session.add(nuevo_Usuario)

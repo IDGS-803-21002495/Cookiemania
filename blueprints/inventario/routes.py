@@ -12,12 +12,9 @@ from flask import flash
 from flask_login import login_required, current_user
 from flask_wtf.csrf import CSRFProtect
 from models import db, Compra, LoteInsumo, Insumo, PresentacionInsumo, Proveedor , PagoProveedor
-from roles import require_role
-from flask_login import login_required
 
 @inventario_bp.route('/')
-@login_required
-@require_role(['ADMIN'])
+@login_required 
 def mostrar_insumos():
     print(f"ID del usuario autenticado: {current_user.id}")  
     insumos = (
@@ -42,7 +39,6 @@ def mostrar_insumos():
 
 @inventario_bp.route('/surtir', methods=['GET', 'POST'])
 @login_required
-@require_role(['ADMIN'])
 def surtir_inventario():
     if request.method == 'POST':
         insumo_id = request.form['insumo_id']
@@ -81,7 +77,6 @@ def surtir_inventario():
 
 @inventario_bp.route('/agregar_al_carrito', methods=['POST'])
 @login_required
-@require_role(['ADMIN'])
 def agregar_al_carrito():
     insumo_id = request.form['insumo_id']
     cantidad = request.form['cantidad']
@@ -160,7 +155,6 @@ def agregar_al_carrito():
 
 @inventario_bp.route('/realizar_compra', methods=['POST'])
 @login_required
-@require_role(['ADMIN'])
 def realizar_compra():
     carrito = session.get('carrito', [])
     if not carrito:
@@ -245,7 +239,6 @@ def realizar_compra():
 
 @inventario_bp.route('/eliminar_del_carrito', methods=['POST'])
 @login_required
-@require_role(['ADMIN'])
 def eliminar_del_carrito():
     insumo_id = request.form['insumo_id']
     carrito = session.get('carrito', [])
@@ -268,7 +261,6 @@ def eliminar_del_carrito():
 
 @inventario_bp.route('/mermar_inventario', methods=['POST'])
 @login_required
-@require_role(['ADMIN'])
 def mermar_inventario():
     insumo_id = request.form['insumo_id']
     presentacion_id = request.form['presentacion_id']
@@ -303,3 +295,79 @@ def mermar_inventario():
         flash("Cantidad desperdiciada descontada correctamente", "success")
 
     return redirect(url_for('inventario.mostrar_insumos'))
+
+@inventario_bp.route('/agregar_insumo', methods=['POST'])
+@login_required
+def agregar_insumo():
+    try:
+        
+        print("Solicitud recibida:", request.form)
+        # Obtener datos del formulario
+        nombre_insumo = request.form['nombre_insumo']
+        unidad_medida = request.form['unidadMedida']
+        presentacion_nombre = request.form['presentacion']
+        cantidad_presentacion = Decimal(request.form['cantidad_presentacion'])
+        precio_unitario = Decimal(request.form['precio_unitario'])
+        cantidad_comprada = Decimal(request.form['cantidad_comprada'])
+        fecha_caducidad = datetime.datetime.strptime(request.form['fecha_caducidad_insumo'], "%Y-%m-%d").date()
+        proveedor_id = request.form['proveedor_id']
+
+        # Insertar en Insumo
+        nuevo_insumo = Insumo(nombre=nombre_insumo, unidad_medida=unidad_medida)
+        db.session.add(nuevo_insumo)
+        db.session.flush()  # Obtener ID del insumo recién insertado
+
+        # Insertar en PresentacionInsumo
+        nueva_presentacion = PresentacionInsumo(
+            nombre=presentacion_nombre,
+            cantidad_base=cantidad_presentacion,
+            unidad_base=unidad_medida,
+            insumo_id=nuevo_insumo.id
+        )
+        db.session.add(nueva_presentacion)
+        db.session.flush()  # Obtener ID de la presentación recién insertada
+
+        # Insertar en Compra
+        nueva_compra = Compra(fecha_compra=datetime.datetime.now(), usuario_id=current_user.id)
+        db.session.add(nueva_compra)
+        db.session.flush()  # Obtener ID de la compra recién insertada
+
+        # Calcular cantidad disponible en LoteInsumo
+        cantidad_disponible = cantidad_comprada * cantidad_presentacion
+
+        # Insertar en LoteInsumo
+        nuevo_lote = LoteInsumo(
+            precio_unitario=precio_unitario,
+            cantidad=cantidad_comprada,
+            cantidad_disponible=cantidad_disponible,
+            fecha_caducidad=fecha_caducidad,
+            compra_id=nueva_compra.id,
+            insumo_id=nuevo_insumo.id,
+            presentacion_id=nueva_presentacion.id,
+            proveedor_id=proveedor_id
+        )
+        db.session.add(nuevo_lote)
+        db.session.flush() 
+
+        # Calcular monto total de la compra
+        monto_total = cantidad_comprada * precio_unitario
+
+        # Insertar en PagoProveedor
+        nuevo_pago = PagoProveedor(
+            fecha=datetime.datetime.now(),
+            monto=monto_total,
+            proveedor_id=proveedor_id,
+            lote_insumo_id=nuevo_lote.id
+        )
+        db.session.add(nuevo_pago)
+
+        # Confirmar transacción
+        db.session.commit()
+
+        flash("Insumo agregado correctamente.", "success")
+        return redirect(url_for('inventario.mostrar_insumos'))
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error al agregar insumo: {str(e)}", "danger")
+        return redirect(url_for('inventario.mostrar_insumos'))

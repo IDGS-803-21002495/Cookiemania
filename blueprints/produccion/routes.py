@@ -8,8 +8,8 @@ from roles import require_role
 
 
 @produccion_bp.route('/')
-@login_required
-@require_role(['ADMIN','VENDEDOR', 'PRODUCCION'])
+# @login_required
+# @require_role(['ADMIN', 'VENDEDOR', 'PRODUCCION'])
 def produccion():
 
     galletas = getGalleta()
@@ -38,7 +38,7 @@ def produccion():
 # Maneja las solicitudes
 @produccion_bp.route('/solicitar_produccion', methods=["GET", "POST"])
 @login_required
-@require_role(['ADMIN','VENDEDOR'])
+@require_role(['ADMIN', 'VENDEDOR'])
 def solicitar():
     galletas = getGalleta()
     sol_clase = soliForm(request.form)
@@ -60,8 +60,8 @@ def solicitar():
 
 # Manejo de estatus
 @produccion_bp.route('/estatusProduccion', methods=["GET", "POST"])
-@login_required
-@require_role(['PRODUCCION'])
+# @login_required
+# @require_role(['PRODUCCION'])
 def estatusProduccion():
     form = estatusForm(request.form)
     estatusLote = estatusGalleta()
@@ -81,7 +81,7 @@ def estatusProduccion():
 
 @produccion_bp.route('/merma', methods=['GET', 'POST'])
 @login_required
-@require_role(['ADMIN','VENDEDOR', 'PRODUCCION'])
+@require_role(['ADMIN', 'VENDEDOR', 'PRODUCCION'])
 def merma():
     merma_class = MermaForm(request.form)
 

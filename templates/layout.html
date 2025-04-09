@@ -11,7 +11,7 @@
   <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
   <script>
     // Duración de la sesión en segundos (10 minutos)
-    const sessionDuration = 10 * 60; // 10 minutos
+    const sessionDuration = 1 * 60 * 60; // 1 hora
     let timeLeft;
 
     // Inicializar el tiempo restante
@@ -74,17 +74,33 @@
         </a>
       </div>
 
-      
+
 
       <!-- DERECHA: Botones Login / Sign up -->
       <div class="flex items-center space-x-2">
-        <div id="timer" class="text-gray-400 text-left px-4 text-sm">Tiempo restante de sesión: 10:00</div>
+        {% if current_user.is_authenticated %}
+        <div class="text-gray-500 text-left px-4 text-sm">Bienvenid@ {{current_user.nombre}}
+        </div>
+        {% endif %}
+        <div id="timer" class="text-gray-400 text-left px-4 text-sm">Tiempo restante de sesión: 60:00</div>
+        <!-- Mostar botón para finaizar sesión cuando el usuario esta logueado -->
+        {% if current_user.is_authenticated %}
         <form action="{{ url_for('auth.logout') }}" method="post" novalidate>
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit"
             class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 font-semibold">Salir</button>
         </form>
-        
+        {% endif %}
+        <!-- Iniciar sesión si no se esta logueado -->
+        {% if not current_user.is_authenticated %}
+        <form action="{{ url_for('auth.login') }}" method="get">
+          <button type="submit"
+            class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 font-semibold">
+            Iniciar sesión
+          </button>
+        </form>
+        {% endif %}
+
       </div>
     </div>
   </nav>
@@ -128,7 +144,7 @@
         <!-- Item: Inventario -->
         {% if current_user.rol == 'ADMIN' or current_user.rol == 'VENDEDOR' or current_user.rol == 'PRODUCCION' %}
         <li>
-          <a href="{{ url_for('inventario.mostrar_insumos') }}"
+          <a href="{{ url_for('produccion.produccion') }}"
             class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
             <!-- Ícono -->
             <svg class="w-6 h-6 text-gray-800 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
@@ -144,7 +160,7 @@
         <!-- Item: Producción -->
         {% if current_user.rol == 'ADMIN' or current_user.rol == 'PRODUCCION' %}
         <li>
-          <a href="{{ url_for('produccion.produccion') }}"
+          <a href="{{ url_for('produccion.estatusProduccion') }}"
             class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
             <!-- Ícono -->
             <svg class="w-6 h-6 text-gray-800 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
@@ -190,7 +206,7 @@
         {% endif %}
         {% if current_user.rol == 'CLIENTE' %}
         <li>
-          <a href="{{ url_for('clientes.index') }}"
+          <a href="{{ url_for('clientes.misPedidos') }}"
             class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
             <!-- Ícono -->
             <svg class="w-6 h-6 text-gray-800 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
@@ -198,7 +214,21 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M10 3v4a1 1 0 0 1-1 1H5m4 8h6m-6-4h6m4-8v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z" />
             </svg>
-            <span class="ml-3">Pedidos</span>
+            <span class="ml-3">Mis pedidos</span>
+          </a>
+        </li>
+        {% endif %}
+        {% if current_user.rol == 'CLIENTE' %}
+        <li>
+          <a href="{{ url_for('clientes.index') }}"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+            <!-- Ícono -->
+            <svg class="w-6 h-6 text-gray-800 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+              width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z" />
+            </svg>
+            <span class="ml-3">Comprar</span>
           </a>
         </li>
         {% endif %}
@@ -235,7 +265,7 @@
 
       </ul>
     </div>
-    
+
   </aside>
 
   <!-- CONTENIDO PRINCIPAL -->

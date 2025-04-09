@@ -43,9 +43,11 @@
         <div class="grid grid-cols-3 gap-6 mt-6">
             {% for resultado in resultados %}
             <div class="bg-white p-4 rounded-xl text-center shadow-md">
+                {% if resultado.imagen %}
                 <div class="w-48 h-48 overflow-hidden rounded-md mx-auto">
-                    <img src="../../../static/img/mantequilla.jpg" class="w-full h-full object-cover">
+                    <img src="{{ url_for('static', filename='uploads/' ~ resultado.imagen) }}" class="w-full h-full object-cover" alt="Imagen de galleta">
                 </div>
+                {% endif %}
                 <p class="font-semibold text-yellow-700">Galleta {{resultado.nombre}}</p>
                 <p class="font-extralight text-gray-500 pb-2 text-sm">{{resultado.gramaje}} gramos</p>
                 <ul class="items-end text-left px-5">

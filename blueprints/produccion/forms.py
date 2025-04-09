@@ -19,7 +19,7 @@ class estatusForm(Form):
         validators.InputRequired(message="El estatus es obligatorio."),
         validators.AnyOf(
             values=["SOLICITADO", "MEZCLANDO",
-                    "HORNEANDO", "ENFRIANDO", "TERMINADO"],
+                    "HORNEANDO", "ENFRIANDO", "TERMINADO", "CANCELADO"],
             message="Selecciona un estatus válido."
         )
     ])

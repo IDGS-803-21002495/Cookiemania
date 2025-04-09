@@ -4,7 +4,7 @@
 
 {% import "_macros.html" as macro %}
 
-<div class="p-4 sm:ml-64">
+<div class="">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         <div class="fixed top-5 right-5 space-y-4 z-50">
@@ -19,7 +19,7 @@
                     
                     <div class="mr-3">
                         {% if category == 'success' %}
-                            
+
                         <h1></h1>
                         {% elif category == 'warning' %}
                            <h1></h1>
@@ -65,9 +65,29 @@
         }
     </style>
     
+    <!-- Botones en la parte superior -->
+    <div class="w-full flex justify-start space-x-3 z-40 mb-4">
+        <!-- Botón para registrar merma -->
+        <a href="{{url_for('produccion.merma')}}"
+            class="flex items-center px-6 py-3 rounded-md bg-yellow-200 hover:bg-yellow-300 text-black shadow-lg transition-all duration-300 transform hover:scale-105">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M12 6v12m6-6H6"/>
+            </svg>
+            Registrar Merma
+        </a>
+
+        <!-- Botón para abrir el modal de solicitud de producción -->
+        <button onclick="openModal()"
+            class="flex items-center px-6 py-3 rounded-md bg-yellow-200 hover:bg-yellow-300 text-black shadow-lg transition-all duration-300 transform hover:scale-105">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M12 4v16m8-8H4"/>
+            </svg>
+            Solicitar Producción
+        </button>
+    </div>
     
-
-
     <div class="p-4 border-dashed rounded-lg dark:border-gray-700">
         
         <h2 class="flex items-center text-3xl font-bold dark:text-gray-600">Inventario Productos</h2>
@@ -83,7 +103,7 @@
                     bg-yellow-300 dark:bg-yellow-700 
                 {% elif galleta.cantidad_total < 50 %}  
                     bg-red-300 dark:bg-red-700 
-                {% endif %}
+                {% endif %} 
                 max-w-xs p-5">
 
                 <div class="flex justify-between items-start">
@@ -92,44 +112,21 @@
                     </a>
                     
                     <div class="flex flex-col items-end">
-                        <img class="rounded-lg w-20 h-20 mb-2" src="../static/img/chispas.png" alt="" />
+                        {% if galleta.imagen %}
+                        <img class="rounded-lg w-20 h-20 mb-2" src="{{ url_for('static', filename='uploads/' ~ galleta.imagen) }}" alt="" />
+                        {% endif %}
                         <h5 class="text-xl font-bold text-yellow-700 dark:text-yellow-400">{{ galleta.cantidad_total }}</h5>
                     </div>
 
                     <h5 style="display: none;">{{galleta.id}}</h5>
-
                     
                 </div>
 
                 <p class="text-sm font-semibold text-black-800 dark:text-black-300">
-                    Estado: {{ galleta.estatus_lotes }}
+                    Estado: {{ galleta.estatus_lote }}
                 </p>
             </div>
             {% endfor %}
-        </div>
-        <!-- Botones debajo de las tarjetas -->
-        <div class="w-full flex justify-start space-x-3 z-40 mt-4">
-         
-    
-            <!-- Botón para registrar merma -->
-            <a href="{{url_for('produccion.merma')}}"
-                class="flex items-center px-6 py-3 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg transition-all duration-300 transform hover:scale-105">
-                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M12 6v12m6-6H6"/>
-                </svg>
-                Registrar Merma
-            </a>
-    
-            <!-- Botón para abrir el modal de solicitud de producción -->
-            <button onclick="openModal()"
-                class="flex items-center px-6 py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all duration-300 transform hover:scale-105">
-                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M12 4v16m8-8H4"/>
-                </svg>
-                Solicitar Producción
-            </button>
         </div>
     </div>
 </div>
@@ -143,7 +140,7 @@
             <form class="mt-4 space-y-4" method="POST" action="{{ url_for('produccion.solicitar') }}" id="productionForm">
                 {{form.csrf_token}}
                 <input type="hidden" name="csrf_token" value="{{csrf_token() }}">
-    
+
                 <div>
                    <label for="product" class="block text-sm font-medium text-gray-700">Seleccionar Producto</label>
                         <select id="product" name="product" class="mt-1 block w-full pl-3 pr-10 py-2 border-gray-300 focus:ring-blue-500 focus:border-blue-500">

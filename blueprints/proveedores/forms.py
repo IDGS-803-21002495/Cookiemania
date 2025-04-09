@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import Form
-from wtforms import StringField, SubmitField
+from wtforms import StringField, SubmitField, IntegerField
 from wtforms.validators import DataRequired, Length, Email
 
 
@@ -42,4 +42,9 @@ class ProveedorForm2(Form):
         Length(max=200, message="La dirección es muy larga")
     ])
 
-
+# Formulario de pago a proveedor 
+class PagoProveedor(Form):
+    monto = IntegerField('Monto a pagar', validators=[
+        DataRequired(message='El monto de pago es un campo requerido.'),
+        Length(min=2, message='Verifique el monto ingreado.')
+    ])

@@ -1,7 +1,7 @@
 from . import usuarios_bp
 from flask import render_template, request, flash, session, redirect, url_for
 from blueprints.usuarios.controler import registrarUsuario, getUsuario, getUsuarioById, actualizarUsuario
-from blueprints.usuarios.forms import usuarioForm
+from blueprints.usuarios.forms import usuarioForm, usuarioForm2
 from models.usuario import Usuario
 from models import db
 from flask_login import login_required, current_user
@@ -22,13 +22,13 @@ def usuarios():
 @login_required
 @require_role(['ADMIN'])
 def registros():
-    registrar_class = usuarioForm(request.form)
+    registrar_class = usuarioForm2(request.form)
 
     if request.method == 'POST' and registrar_class.validate():
         nombre = registrar_class.nombre.data
         username = registrar_class.username.data
+        password = registrar_class.password.data
         email = registrar_class.email.data
-        password = username
         rol = registrar_class.rol.data
 
         registrarUsuario(nombre, username, email, rol, password)
@@ -47,7 +47,6 @@ def actualizar(usuario_id):
     if request.method == 'POST' and registrar_class.validate():
         usuario.nombre = registrar_class.nombre.data
         usuario.username = registrar_class.username.data
-        usuario.password = registrar_class.password.data
         usuario.email = registrar_class.email.data
         usuario.rol = registrar_class.rol.data
         db.session.commit()
@@ -58,7 +57,6 @@ def actualizar(usuario_id):
     registrar_class.username.data = usuario.username
     registrar_class.email.data = usuario.email
     registrar_class.rol.data = usuario.rol
-    registrar_class.estado.data = usuario.password
 
     return render_template("verdetalle_usuario.html", form=registrar_class, usuario=usuario)
 

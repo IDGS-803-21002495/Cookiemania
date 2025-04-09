@@ -205,7 +205,11 @@ def verify_code():
                     session.pop('temp_user_id', None)
 
                     flash("Verificación exitosa. ¡Bienvenido!", "success")
-                    return redirect(url_for('index'))
+
+                    if current_user.rol == 'CLIENTE':
+                        return redirect(url_for('cookiemania'))
+                    else:
+                        return redirect(url_for('index'))
                     
                 else:
                     flash("Usuario no encontrado.", "danger")

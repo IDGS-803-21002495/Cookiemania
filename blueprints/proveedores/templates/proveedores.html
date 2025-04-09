@@ -4,9 +4,7 @@
 
 {% import "_macros.html" as macros %}
 
-    <div class="p-4 sm:ml-64">
-        
-
+    <div class="">
         <p class="mb-5 text-gray-500 dark:text-gray-400">Registro de todos los proveedores</p>
         <form method="POST" action="{{ url_for('proveedores.agregar_proveedor') }}" class="w-100 p-6 bg-white rounded-lg shadow-md mb-4" novalidate>
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

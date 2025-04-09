@@ -3,7 +3,7 @@
 {%block container%}
 {% import "_macro.html" as macros %}
 
-    <div class="p-4 sm:ml-64">
+    <div class="">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <div class="fixed top-5 right-5 space-y-4 z-50">
@@ -45,7 +45,7 @@
         <div class="p-4 border-dashed rounded-lg dark:border-gray-700">
             <h2 class="flex items-center text-3xl font-bold dark:text-gray-600">Usuarios</h2>
             <p class="mb-10 text-gray-500 dark:text-gray-400">Registro de todos los usuarios</p>
-            <form method="POST" action="{{ url_for('usuarios.registros') }}" class="w-100 p-6 bg-white rounded-lg shadow-md mb-4">
+            <form method="POST" action="{{ url_for('usuarios.registros') }}" class="w-100 p-6 bg-white rounded-lg shadow-md mb-4" novalidate>
                 {{ form.csrf_token }}
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="flex justify-between items-center mb-4">
@@ -81,6 +81,12 @@
                         
                         <div class="mb-4">
                             {{ macros.campoNuevo(form.username, class="bg-white border border-gray-200 text-gray-900 rounded-lg
+                            focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-300
+                            dark:placeholder-gray-500 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500")
+                            }}
+                        </div>
+                        <div class="mb-4">
+                            {{ macros.campoNuevo(form.password, class="bg-white border border-gray-200 text-gray-900 rounded-lg
                             focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-300
                             dark:placeholder-gray-500 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500")
                             }}

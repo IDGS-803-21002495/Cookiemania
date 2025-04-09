@@ -59,11 +59,46 @@ class usuarioForm(Form):
         'rol',
         validators=[validators.DataRequired(
             message="Debe seleccionar un rol.")],
-        choices=[('ADMIN', 'Admin'),
-                 ('VENDEDOR', 'Vendedor'),
+        choices=[
+            ('VENDEDOR', 'Vendedor'),
+            ('PRODUCCION', 'Producción'),
+            ('CLIENTE', 'Cliente')]
+    )
+
+
+class usuarioForm2(Form):
+    nombre = StringField('nombre', [
+        validators.DataRequired(message='Campo requerido'),
+        validators.Length(min=5, max=70, message='Ingrese un nombre válido'),
+        validate_nombre  # Agregar validación personalizada
+    ])
+
+    username = StringField('username', [
+        validators.DataRequired(message='Campo requerido'),
+        validators.Length(min=5, max=15, message='Ingrese un username válido'),
+        validate_username
+    ])
+
+    password = StringField('password', [
+        validators.DataRequired(message='Campo requerido'),
+        validators.Length(
+            min=8, max=20, message='Ingrese una contraseña válida'),
+        validate_password  # Agregar validación personalizada
+    ])
+    email = EmailField('email', [
+        validators.DataRequired(message='Campo requerido'),
+        # Valida que sea un correo válido
+        validators.Email(message='Ingrese un correo electrónico válido'),
+
+        validators.Length(
+            min=15, max=70, message='Ingrese un correo electrónico válido')
+    ])
+
+    rol = SelectField(
+        'rol',
+        validators=[validators.DataRequired(
+            message="Debe seleccionar un rol.")],
+        choices=[('VENDEDOR', 'Vendedor'),
                  ('PRODUCCION', 'Producción'),
                  ('CLIENTE', 'Cliente')]
     )
-
-    
-    

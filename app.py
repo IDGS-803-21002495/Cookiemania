@@ -1,5 +1,5 @@
-from flask import Flask, redirect, url_for, render_template
-from flask_login import login_required
+from flask import Flask, redirect, request, url_for, render_template
+from flask_login import login_required, current_user
 from flask_mail import Mail
 from flask import g
 import os
@@ -8,7 +8,7 @@ from models.usuario import Usuario
 from config import DevelopmentConfig, mail
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager
-
+from roles import require_role
 from blueprints.auth import auth_bp
 from blueprints.compras import compras_bp
 from blueprints.inventario import inventario_bp
@@ -19,6 +19,8 @@ from blueprints.recetas import recetas_bp
 from blueprints.usuarios import usuarios_bp
 from blueprints.ventas import ventas_bp
 from blueprints.clientes import clientes_bp
+from blueprints.clientes.forms import SelectProduct
+from blueprints.clientes.routes import consulta_precios
 
 
 app = Flask(__name__)
@@ -61,14 +63,34 @@ def page_not_found(e):
     return render_template('404.html'),404
 
 @app.route("/")
-@login_required
 def home():
-    return redirect(url_for("index"))
+    # Si no esta logueado el usuario lo dirige a index 
+    if not current_user.is_authenticated:
+        return redirect(url_for("cookiemania"))
+    
+    rol = current_user.rol
 
-@app.route("/index")
+    if rol == 'ADMIN' or 'VENDEDOR' or 'PRODUCCION':
+        # Dirigir a index (cookiemania)
+        return redirect(url_for('index'))
+    else:
+        # Si es cliente dirigir a index de nuevo 
+        return redirect(url_for('cookiemania'))
+    
+    # Si esta logueado, se verifica el rol
+
+@app.route("/cookiemania")
+def cookiemania():
+    resultados = consulta_precios()
+    create_form = SelectProduct(request.form)
+    return render_template('clientes.html', form = create_form, resultados=resultados)
+
+@app.route('/index')
 @login_required
+@require_role(['ADMIN', 'VENDEDOR', 'PRODUCCION'])
 def index():
     return render_template('index.html')
+
 
 
 if __name__ == '__main__':
