@@ -1,36 +1,41 @@
-{# templates/editar_receta.html #} {% extends "layout.html" %} {% block
-container %}
-<div class="container mx-auto py-8">
-  <h1 class="text-2xl font-bold mb-6">
-    Editar Receta #{{ form.receta_id.data }}
-  </h1>
+{# templates/editar_receta.html #}
+{% extends "layout.html" %}
+{% block container %}
+<div class="mx-auto" style="max-width: 600px;">
   <div class="bg-white p-6 rounded-lg shadow">
+    <h1 class="text-2xl font-bold mb-6">
+      Editar Receta #{{ form.receta_id.data }}
+    </h1>
+
     {% if galleta and galleta.imagen %}
-    <div class="mb-4">
-      <p class="text-sm font-medium">Imagen actual:</p>
-      <img
-        src="{{ url_for('static', filename='uploads/' ~ galleta.imagen) }}"
-        alt="Imagen actual"
-        class="w-48 h-32 object-cover rounded"
-      />
-    </div>
+      <div class="mb-4">
+        <p class="text-sm font-medium">Imagen actual:</p>
+        <img
+          src="{{ url_for('static', filename='uploads/' ~ galleta.imagen) }}"
+          alt="Imagen actual"
+          class="w-48 h-32 object-cover rounded"
+        />
+      </div>
     {% endif %}
+
     <form method="POST" enctype="multipart/form-data" id="editarWizardForm">
       {{ form.hidden_tag() }}
+
+      <!-- PASO 1 -->
       <div id="editarWizardStep1" class="wizard-step">
         <h3 class="text-lg font-semibold mb-2">1. Datos de la Galleta</h3>
         <div class="mb-4">
           <label class="block text-sm font-medium">Nombre Galleta</label>
-          {{ form.nombre_galleta(class_="w-full border rounded px-2 py-1",
-          readonly="readonly") }} {% for err in form.nombre_galleta.errors %}
-          <p class="text-red-500 text-sm">{{ err }}</p>
+          {{ form.nombre_galleta(class_="w-full border rounded px-2 py-1", readonly="readonly") }}
+          {% for err in form.nombre_galleta.errors %}
+            <p class="text-red-500 text-sm">{{ err }}</p>
           {% endfor %}
         </div>
         <div class="mb-4">
           <label class="block text-sm font-medium">Peso (gr)</label>
-          {{ form.peso_galleta(class_="w-full border rounded px-2 py-1") }} {%
-          for err in form.peso_galleta.errors %}
-          <p class="text-red-500 text-sm">{{ err }}</p>
+          {{ form.peso_galleta(class_="w-full border rounded px-2 py-1") }}
+          {% for err in form.peso_galleta.errors %}
+            <p class="text-red-500 text-sm">{{ err }}</p>
           {% endfor %}
         </div>
         <div class="mb-4">
@@ -45,72 +50,71 @@ container %}
         </div>
         <div class="mb-4">
           <label class="block text-sm font-medium">Descripción Galleta</label>
-          {{ form.descripcion_galleta(class_="w-full border rounded px-2 py-1")
-          }} {% for err in form.descripcion_galleta.errors %}
-          <p class="text-red-500 text-sm">{{ err }}</p>
+          {{ form.descripcion_galleta(class_="w-full border rounded px-2 py-1") }}
+          {% for err in form.descripcion_galleta.errors %}
+            <p class="text-red-500 text-sm">{{ err }}</p>
           {% endfor %}
         </div>
         <div class="mb-4">
           <label class="block text-sm font-medium">Estado Disponibilidad</label>
-          {{ form.estado_disponibilidad(class_="w-full border rounded px-2
-          py-1") }} {% for err in form.estado_disponibilidad.errors %}
-          <p class="text-red-500 text-sm">{{ err }}</p>
+          {{ form.estado_disponibilidad(class_="w-full border rounded px-2 py-1") }}
+          {% for err in form.estado_disponibilidad.errors %}
+            <p class="text-red-500 text-sm">{{ err }}</p>
           {% endfor %}
         </div>
         <div class="mb-4">
-          <label class="block text-sm font-medium"
-            >Imagen (dejar en blanco para mantener la actual)</label
-          >
-          {{ form.imagen_galleta(class_="block w-full text-sm text-gray-900
-          border border-gray-300 rounded-lg cursor-pointer bg-gray-50") }} {%
-          for err in form.imagen_galleta.errors %}
-          <p class="text-red-500 text-sm">{{ err }}</p>
+          <label class="block text-sm font-medium">
+            Imagen (dejar en blanco para mantener la actual)
+          </label>
+          {{ form.imagen_galleta(class_="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50") }}
+          {% for err in form.imagen_galleta.errors %}
+            <p class="text-red-500 text-sm">{{ err }}</p>
           {% endfor %}
         </div>
       </div>
+
+      <!-- PASO 2 -->
       <div id="editarWizardStep2" class="wizard-step hidden">
         <h3 class="text-lg font-semibold mb-2">2. Datos de la Receta</h3>
         <div class="mb-4">
           <label class="block text-sm font-medium">Cantidad de Lote</label>
-          {{ form.cantidad_lote(class_="w-full border rounded px-2 py-1") }} {%
-          for err in form.cantidad_lote.errors %}
-          <p class="text-red-500 text-sm">{{ err }}</p>
+          {{ form.cantidad_lote(class_="w-full border rounded px-2 py-1") }}
+          {% for err in form.cantidad_lote.errors %}
+            <p class="text-red-500 text-sm">{{ err }}</p>
           {% endfor %}
         </div>
         <div class="mb-4">
           <label class="block text-sm font-medium">Descripción Receta</label>
-          {{ form.descripcion_receta(class_="w-full border rounded px-2 py-1",
-          rows="3") }} {% for err in form.descripcion_receta.errors %}
-          <p class="text-red-500 text-sm">{{ err }}</p>
+          {{ form.descripcion_receta(class_="w-full border rounded px-2 py-1", rows="3") }}
+          {% for err in form.descripcion_receta.errors %}
+            <p class="text-red-500 text-sm">{{ err }}</p>
           {% endfor %}
         </div>
       </div>
+
+      <!-- PASO 3 -->
       <div id="editarWizardStep3" class="wizard-step hidden">
         <h3 class="text-lg font-semibold mb-2">3. Insumos Necesarios</h3>
         <div id="detallesContainerEdit">
           {% for subform in form.detalles %}
-          <div class="detalle-item mb-4 p-2 border rounded">
-            <label class="block text-sm font-medium"
-              >{{ subform.insumo_id.label }}</label
-            >
-            {{ subform.insumo_id(class_="w-full border rounded px-2 py-1") }} {%
-            for err in subform.insumo_id.errors %}
-            <p class="text-red-500 text-sm">{{ err }}</p>
-            {% endfor %}
-            <label class="block text-sm font-medium mt-2"
-              >{{ subform.cantidad_insumo.label }}</label
-            >
-            {{ subform.cantidad_insumo(class_="w-full border rounded px-2 py-1")
-            }} {% for err in subform.cantidad_insumo.errors %}
-            <p class="text-red-500 text-sm">{{ err }}</p>
-            {% endfor %}
-            <button
-              type="button"
-              class="eliminarDetalle bg-red-500 text-white px-2 py-1 mt-2 rounded"
-            >
-              Eliminar
-            </button>
-          </div>
+            <div class="detalle-item mb-4 p-2 border rounded">
+              <label class="block text-sm font-medium">{{ subform.insumo_id.label }}</label>
+              {{ subform.insumo_id(class_="w-full border rounded px-2 py-1") }}
+              {% for err in subform.insumo_id.errors %}
+                <p class="text-red-500 text-sm">{{ err }}</p>
+              {% endfor %}
+              <label class="block text-sm font-medium mt-2">{{ subform.cantidad_insumo.label }}</label>
+              {{ subform.cantidad_insumo(class_="w-full border rounded px-2 py-1") }}
+              {% for err in subform.cantidad_insumo.errors %}
+                <p class="text-red-500 text-sm">{{ err }}</p>
+              {% endfor %}
+              <button
+                type="button"
+                class="eliminarDetalle bg-red-500 text-white px-2 py-1 mt-2 rounded"
+              >
+                Eliminar
+              </button>
+            </div>
           {% endfor %}
         </div>
         <button
@@ -121,6 +125,8 @@ container %}
           Agregar Insumo
         </button>
       </div>
+
+      <!-- Botones del Wizard -->
       <div class="mt-6 flex justify-between">
         <button
           type="button"
@@ -145,12 +151,13 @@ container %}
         </button>
       </div>
     </form>
+
     <div class="mt-4">
-      <a
-        href="{{ url_for('recetas.listar_o_crear_recetas') }}"
-        class="text-blue-600 hover:underline"
-        >Volver al Catálogo</a
+      <a href="{{ url_for('recetas.listar_o_crear_recetas') }}"
+         class="text-blue-600 hover:underline"
       >
+        Volver al Catálogo
+      </a>
     </div>
   </div>
 </div>
@@ -163,10 +170,7 @@ container %}
       const inputs = items[i].querySelectorAll("select, input, label");
       inputs.forEach((input) => {
         if (input.name) {
-          input.name = input.name.replace(
-            /detalles-\d+-/,
-            "detalles-" + i + "-"
-          );
+          input.name = input.name.replace(/detalles-\d+-/, "detalles-" + i + "-");
         }
       });
     }
@@ -201,36 +205,37 @@ container %}
       btnSubmitEdit.classList.add("hidden");
     }
   }
+
   btnNextEdit.addEventListener("click", () => {
     if (currentStepEdit < totalStepsEdit) {
       currentStepEdit++;
       showStepEdit(currentStepEdit);
     }
   });
+
   btnPrevEdit.addEventListener("click", () => {
     if (currentStepEdit > 1) {
       currentStepEdit--;
       showStepEdit(currentStepEdit);
     }
   });
+
   showStepEdit(currentStepEdit);
 
-  document
-    .getElementById("addDetalleEdit")
-    .addEventListener("click", function () {
-      let container = document.getElementById("detallesContainerEdit");
-      let items = container.getElementsByClassName("detalle-item");
-      if (items.length > 0) {
-        let newItem = items[0].cloneNode(true);
-        newItem.querySelectorAll("select, input, label").forEach((el) => {
-          if (el.tagName !== "LABEL") {
-            el.value = "";
-          }
-        });
-        container.appendChild(newItem);
-        actualizarIndices("detallesContainerEdit");
-      }
-    });
+  document.getElementById("addDetalleEdit").addEventListener("click", function () {
+    let container = document.getElementById("detallesContainerEdit");
+    let items = container.getElementsByClassName("detalle-item");
+    if (items.length > 0) {
+      let newItem = items[0].cloneNode(true);
+      newItem.querySelectorAll("select, input, label").forEach((el) => {
+        if (el.tagName !== "LABEL") {
+          el.value = "";
+        }
+      });
+      container.appendChild(newItem);
+      actualizarIndices("detallesContainerEdit");
+    }
+  });
 
   document.addEventListener("click", function (e) {
     if (e.target && e.target.classList.contains("eliminarDetalle")) {

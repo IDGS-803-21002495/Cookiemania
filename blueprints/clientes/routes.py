@@ -180,36 +180,34 @@ def update_product(id_galleta, modalidad, cantidad):
     # Calcular detalles de la venta y verificar existencias
     producto, error = calcular_detalles_venta(modalidad, int(cantidad), int(id_galleta))
     
-    print(error)
-
     if error == 'No hay suficiente stock disponible':
-        print('Sin stock al actualizar')
-        flash('No hay suficiente stock disponible.', 'danger')  
+        flash('No hay suficiente stock disponible.', 'danger')
         return redirect(url_for('clientes.index'))
     else:
-        # Si el producto ya está en el carrito, actualizamos su cantidad y subtotal
         carrito = session.get('carrito', [])
         producto_existente = False
 
         for item in carrito:
+            # Coinciden galleta y tipo_venta
             if item['id_galleta'] == producto['id_galleta'] and item['tipo_venta'] == producto['tipo_venta']:
-                # Si ya existe el producto en el carrito, actualizamos cantidad y subtotal
-                item['cantidad'] = cantidad
-                item['subtotal'] = producto['subtotal']
-                item['presentacion'] = producto['presentacion']
+                # Se actualizan TODOS los campos relevantes
+                item['cantidad'] = cantidad  # Cantidad de paquetes o unidades según la modalidad
+                item['cantidades_unidades'] = producto['cantidades_unidades']  # Total de galletas resultantes
+                item['subtotal'] = producto['subtotal']  # Subtotal recalculado
+                item['presentacion'] = producto['presentacion']  # Texto tipo "2 paquete(s) de 1kg"
+                # item['precio'] = producto['precio']  # Si llegara a variar el precio unitario
                 producto_existente = True
                 break
 
-        # Si el producto no estaba en el carrito, lo agregamos
         if not producto_existente:
+            # Si no se encontró en el carrito, se añade
             carrito.append(producto)
             
-        # Guardar los cambios en el carrito
         session['carrito'] = carrito
         session.modified = True
         
-
         return redirect(url_for('clientes.index'))
+
 
 
 @clientes_bp.route('/delete_product/<int:id_product>/<string:presentacion>', methods=['POST'])
