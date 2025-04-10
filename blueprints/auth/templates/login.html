@@ -62,9 +62,9 @@
                     Ingresar
                 </button>
                 <div class="text-sm font-medium text-gray-700 dark:text-gray-700">
-                    No registrado?
+                    ¿No tienes una cuenta?
                     <a href="#" id="crear-usuario" class="text-blue-700 hover:underline dark:text-blue-500">
-                        Crear un usuario
+                        Crear una nueva
                     </a>
                 </div>
             </form>
@@ -92,40 +92,61 @@
                         </div>
                         <!-- Modal body -->
                         <div class="p-4">
-                            <form class="p-4 md:p-3" method="POST" action="{{ url_for('auth.create_user') }}">
+                            <form class="p-4 md:p-3" method="POST" action="{{ url_for('auth.create_user') }}" novalidate>
                                 {{ form.csrf_token }}
                                 <div class="grid gap-2 mb-2">
                                     <div class="col-span-2">
-                                        <label for="nombre" class="block text-gray-700">Nombre</label>
-                                        <input type="text" name="nombre" id="nombre"
-                                            class="w-full border border-gray-300 rounded-md p-2 mb-2" required>
+                                        <label class="block text-gray-700 mb-1">Nombre</label>
+                                        {{ form_registro.nombre(class="w-full border border-gray-300 rounded-md p-2 mb-4
+                                        focus:ring-2 focus:ring-blue-500") }}
+                                        {% for error in form_registro.nombre.errors %}
+                                        <p class="text-red-500 text-sm">{{ error }}</p>
+                                        {% endfor %}
                                     </div>
                                     <div class="col-span-2">
-                                        <label for="username" class="block text-gray-700">Nombre de Usuario</label>
-                                        <input type="text" name="username" id="username"
-                                            class="w-full border border-gray-300 rounded-md p-2 mb-2" required>
+                                        <label class="block text-gray-700 mb-1">Nombre de usuarios</label>
+                                        {{ form_registro.nombre_usuario(class="w-full border border-gray-300 rounded-md
+                                        p-2 mb-4
+                                        focus:ring-2 focus:ring-blue-500") }}
+                                        {% for error in form_registro.nombre_usuario.errors %}
+                                        <p class="text-red-500 text-sm">{{ error }}</p>
+                                        {% endfor %}
                                     </div>
                                     <div class="col-span-2">
-                                        <label for="email" class="block text-gray-700">Correo Electrónico</label>
-                                        <input type="email" name="email" id="email"
-                                            class="w-full border border-gray-300 rounded-md p-2 mb-2" required>
+                                        <label class="block text-gray-700 mb-1">Correo electronico</label>
+                                        {{ form_registro.correo(class="w-full border border-gray-300 rounded-md p-2 mb-4
+                                        focus:ring-2 focus:ring-blue-500") }}
+                                        {% for error in form_registro.correo.errors %}
+                                        <p class="text-red-500 text-sm">{{ error }}</p>
+                                        {% endfor %}
                                     </div>
                                     <div class="col-span-2">
-                                        <label for="password" class="block text-gray-700">Contraseña</label>
-                                        <input type="password" name="password" id="password"
-                                            class="w-full border border-gray-300 rounded-md p-2 mb-2" required>
+                                        <label class="block text-gray-700 mb-1">Contraseña</label>
+                                        {{ form_registro.password(class="w-full border border-gray-300 rounded-md p-2
+                                        mb-4
+                                        focus:ring-2 focus:ring-blue-500") }}
+                                        {% for error in form_registro.password.errors %}
+                                        <p class="text-red-500 text-sm">{{ error }}</p>
+                                        {% endfor %}
+                                        <p class="text-sm text-gray-400">La contraseña debe incluir al menos una
+                                            mayúscula, una minúscula, un número y un carácter especial.</p>
                                     </div>
                                 </div>
                                 <button type="submit"
-                                    class="text-white inline-flex items-center bg-yellow-500 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-yellow-600 dark:hover:bg-yellow-500 dark:focus:ring-blue-800">
-                                    <svg class="me-1 -ms-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path fill-rule="evenodd"
-                                            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                                            clip-rule="evenodd"></path>
-                                    </svg>
-                                    Agregar usuario
+                                    class="text-white inline-flex items-center bg-yellow-500 hover:bg-yellow-900 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                                    Registrarse
                                 </button>
+                                {% if form_registro is defined and form_registro.errors %}
+                                <script>
+                                    document.addEventListener("DOMContentLoaded", function () {
+                                        const modal = document.getElementById("authentication-modal");
+                                        if (modal) {
+                                            modal.classList.remove("hidden");
+                                            modal.classList.add("flex");
+                                        }
+                                    });
+                                </script>
+                                {% endif %}
                             </form>
                         </div>
                     </div>
@@ -159,6 +180,7 @@
                 }
             });
         });
+
     </script>
 </body>
 

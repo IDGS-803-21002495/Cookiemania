@@ -31,7 +31,7 @@
             </svg>
         </div>
 
-        <form method="POST" action="{{ url_for('auth.verify_code') }}" class="w-80">
+        <form method="POST" action="{{ url_for('auth.verify_code') }}" class="w-80" novalidate>
             {{ form.csrf_token }}
 
             <label class="block text-gray-700 mb-1">Código de Verificación</label>

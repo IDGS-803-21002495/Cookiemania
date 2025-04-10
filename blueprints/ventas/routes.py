@@ -1,12 +1,12 @@
 from flask import flash, render_template, redirect, request, url_for, session
 from flask_login import login_required, current_user
-from models import db, LoteProduccion, Receta, Galleta, Venta
+from models import db, LoteProduccion, Receta, Galleta, Venta, PagoProveedor, Insumo, LoteInsumo, PresentacionInsumo, MermaInsumo, MermaProducto
 from . import ventas_bp
 from roles import require_role
 import logging
 from .forms import SelectProduct
 from datetime import datetime
-from sqlalchemy import func, select
+from sqlalchemy import desc, func, select
 from models import db, Venta, DetalleVenta, LoteProduccion
 from models.enums import EstadoVenta
 
@@ -30,28 +30,37 @@ def consulta_precios():
     resultados = []
 
     for galleta in galletas:
-        peso_galleta = galleta.peso
         precio_galleta = galleta.precio
+        peso_galleta = galleta.peso
 
+        # Cálculo de unidades por paquete
         unidades_completas_1000 = int(1000 // peso_galleta)
         unidades_completas_700 = int(700 // peso_galleta)
 
         precio_paquete_1000g = unidades_completas_1000 * precio_galleta
         precio_paquete_700g = unidades_completas_700 * precio_galleta
 
+        # Consulta para obtener la suma de existencias de todos los lotes de esta galleta
+        existencias = verificar_existencias(galleta.id)
+
+        total_existencias = existencias.cantidad_disponible if existencias.cantidad_disponible else 0
+
+        # Agregar la información del producto y su existencias al resultado
         resultados.append({
             'id': galleta.id,
             'nombre': galleta.nombre,
             'gramaje': galleta.peso,
             'unidad': galleta.precio,
-            'imagen':galleta.imagen,
+            'imagen': galleta.imagen,
             'precio_1000g': precio_paquete_1000g,
             'unidades_1000g': unidades_completas_1000,
             'precio_700g': precio_paquete_700g,
-            'unidades_700g': unidades_completas_700
+            'unidades_700g': unidades_completas_700,
+            'existencias_totales': total_existencias  
         })
 
     return resultados
+
 
 def verificar_existencias(galleta_id): 
     # Usamos filter en lugar de filter_by
@@ -65,6 +74,8 @@ def verificar_existencias(galleta_id):
         Galleta, Receta.galleta_id == Galleta.id
     ).filter(
         Galleta.id == galleta_id
+    ).filter(
+        LoteProduccion.estado_lote == 'TERMINADO'
     ).group_by(
         Galleta.id
     ).first()
@@ -158,10 +169,11 @@ def add_product():
         
         carrito = session.get('carrito', [])
         
-        # Buscar la cantidad total del producto en el carrito
+        # Sumar todas las unidades solicitadas de la misma galleta (sin importar la presentación)
         for item in carrito:
-            if item['id_galleta'] == producto['id_galleta'] and item['tipo_venta'] == producto['tipo_venta']:
+            if item['id_galleta'] == producto['id_galleta']:
                 total_cantidad += item['cantidades_unidades']
+
         
         # Verificar si la cantidad total supera las existencias
         existencias = verificar_existencias(producto['id_galleta'])
@@ -198,42 +210,52 @@ def add_product():
 @login_required
 @require_role(['ADMIN','VENDEDOR'])
 def update_product(id_galleta, modalidad, cantidad):
-
-    # Calcular detalles de la venta y verificar existencias
-    producto, error = calcular_detalles_venta(modalidad, int(cantidad), int(id_galleta))
+    cantidad = int(cantidad)
     
-    print(error)
+    # Calcular detalles de la venta y verificar existencias
+    producto, error = calcular_detalles_venta(modalidad, cantidad, int(id_galleta))
+    if error:
+        flash(error, 'danger')
+        return redirect(url_for('venta.index'))
 
-    if error == 'No hay suficiente stock disponible':
-        print('Sin stock al actualizar')
+    carrito = session.get('carrito', [])
+
+    # Inicializar la cantidad total con la nueva cantidad
+    total_cantidad = producto['cantidades_unidades']
+
+    # Sumar todas las unidades del mismo producto en otras presentaciones
+    for item in carrito:
+        if item['id_galleta'] == producto['id_galleta'] and item['tipo_venta'] != producto['tipo_venta']:
+            total_cantidad += item['cantidades_unidades']
+
+    # Verificar si la cantidad total supera las existencias
+    existencias = verificar_existencias(producto['id_galleta'])
+    if total_cantidad > existencias.cantidad_disponible:
         log_error(f"Stock insuficiente para el producto con ID {id_galleta}.")
-        flash('No hay suficiente stock disponible.', 'danger')  
+        flash('No hay suficiente stock disponible para la cantidad solicitada.', 'danger')  
         return redirect(url_for('venta.index'))
-    else:
-        # Si el producto ya está en el carrito, actualizar su cantidad y subtotal
-        carrito = session.get('carrito', [])
-        producto_existente = False
 
-        for item in carrito:
-            if item['id_galleta'] == producto['id_galleta'] and item['tipo_venta'] == producto['tipo_venta']:
-                item['cantidad'] = cantidad
-                item['subtotal'] = producto['subtotal']
-                item['presentacion'] = producto['presentacion']
-                producto_existente = True
-                break
+    # Actualizar o agregar el producto en el carrito
+    producto_existente = False
+    for item in carrito:
+        if item['id_galleta'] == producto['id_galleta'] and item['tipo_venta'] == producto['tipo_venta']:
+            item['cantidad'] = cantidad
+            item['cantidades_unidades'] = producto['cantidades_unidades']
+            item['subtotal'] = producto['subtotal']
+            item['presentacion'] = producto['presentacion']
+            producto_existente = True
+            break
 
+    if not producto_existente:
+        carrito.append(producto)
 
+    # Guardar el carrito actualizado
+    session['carrito'] = carrito
+    session.modified = True
 
-        # Si el producto no estaba en el carrito, lo agregamos
-        if not producto_existente:
-            carrito.append(producto)
-            
-        # Guardar los cambios en el carrito
-        session['carrito'] = carrito
-        session.modified = True
+    flash("Producto actualizado correctamente", "success")
+    return redirect(url_for('venta.index'))
 
-        # Redirigir a la página de ventas con el carrito actualizado
-        return redirect(url_for('venta.index'))
 
 
 @ventas_bp.route('/delete_product/<int:id_product>/<string:presentacion>', methods=['POST'])
@@ -328,8 +350,122 @@ def add_venta():
     session.modified = True  
 
     return redirect(url_for('venta.index'))  
+
+# Función para obtener todas las salidas de efectivo 
+def obtener_salidas_efectivo_proveedores():
+    hoy = datetime.today().date()
+
+    pagos = (
+        db.session.query(
+            PagoProveedor.fecha,
+            LoteInsumo.cantidad,
+            PresentacionInsumo.nombre.label('presentacion'),
+            Insumo.nombre.label('insumo'),
+            PagoProveedor.monto
+        )
+        .join(LoteInsumo, PagoProveedor.lote_insumo_id == LoteInsumo.id)
+        .join(Insumo, LoteInsumo.insumo_id == Insumo.id)
+        .join(PresentacionInsumo, LoteInsumo.presentacion_id == PresentacionInsumo.id)
+        .filter(func.date(PagoProveedor.fecha) == hoy)
+        .all()
+    )
+
+    resultados = []
+    for pago in pagos:
+        motivo = f"Compra de {int(pago.cantidad)} {pago.presentacion.lower()} de {pago.insumo.lower()}"
+        resultados.append({
+            'fecha': pago.fecha.strftime('%Y-%m-%d %H:%M:%S'),
+            'motivo': motivo,
+            'cantidad': float(pago.cantidad),
+            'total': float(pago.monto)
+        })
+
+    return resultados
+
+# Función para obtener la merma de insumos 
+def obtener_merma_insumo():
+    hoy = datetime.today().date()
+
+    mermas = (
+        db.session.query(
+            MermaInsumo.fecha,
+            Insumo.nombre.label('insumo'),
+            MermaInsumo.cantidad_merma
+        )
+        .join(Insumo, MermaInsumo.insumo_id == Insumo.id)
+        .filter(func.date(MermaInsumo.fecha) == hoy)
+        .all()
+    )
+
+    resultados = []
+    for merma in mermas:
+        # Obtener último lote para precio estimado
+        ultimo_lote = (
+            db.session.query(LoteInsumo.precio_unitario)
+            .filter(LoteInsumo.insumo_id == merma.insumo_id)
+            .order_by(desc(LoteInsumo.id))
+            .first()
+        )
+        precio_unitario = float(ultimo_lote.precio_unitario) if ultimo_lote else 0
+        total_perdido = float(merma.cantidad_merma) * precio_unitario
+
+        resultados.append({
+            'hora': merma.fecha.strftime('%H:%M:%S'),
+            'producto_insumo': merma.insumo,
+            'cantidad': float(merma.cantidad_merma),
+            'total_perdido': round(total_perdido, 2)
+        })
+
+    return resultados
     
+# Función para obtener todas las ventas hechas en el dia
+def obtener_detalles_ventas_hoy():
+    hoy = datetime.today().date()
+
+    detalles = (
+        db.session.query(
+            Venta.fecha_registro,
+            Galleta.nombre.label('nombre_galleta'),
+            DetalleVenta.tipo_venta,
+            DetalleVenta.cantidad_presentacion.label('cantidad_presentacion'),
+            (DetalleVenta.precio_unitario * DetalleVenta.cantidad_unidades).label('subtotal')
+        )
+        .join(DetalleVenta, Venta.id == DetalleVenta.venta_id)
+        .join(Galleta, Galleta.id == DetalleVenta.galleta_id)
+        .filter(func.date(Venta.fecha_registro) == hoy)
+        .filter(Venta.estado.in_(['LISTO', 'ENTREGADO', 'PENDIENTE']))
+        .all()
+    )
+
+    resultados = []
+    for detalle in detalles:
+
+        producto = ''
+
+        if detalle.tipo_venta == 'UNIDAD':
+            producto = f'{detalle.cantidad_presentacion} unidad(es) de {detalle.nombre_galleta}'
+        elif detalle.tipo_venta == 'PAQUETE1':
+            producto = f'{detalle.cantidad_presentacion} paquete(s) de 1 kg de {detalle.nombre_galleta}'
+        elif detalle.tipo_venta == 'PAQUETE2':
+            producto = f'{detalle.cantidad_presentacion} paquete(s) de 700 gr de {detalle.nombre_galleta}'
+        elif detalle.tipo_venta == 'GRAMOS':
+            producto = f'{detalle.cantidad_presentacion} gramos de {detalle.nombre_galleta}'
+
+        resultados.append({
+            'fecha_hora': detalle.fecha_registro.strftime('%Y-%m-%d %H:%M:%S'),
+            'producto': producto,
+            'cantidad': int(detalle.cantidad_presentacion),
+            'subtotal': float(detalle.subtotal)
+        })
+
+    return resultados
     
+
 @ventas_bp.route('/corte_venta', methods = ['GET', 'POST'])
 def corte_venta():
-    return render_template('corte_venta.html')
+    egresos = obtener_salidas_efectivo_proveedores()
+    ventas = obtener_detalles_ventas_hoy()
+    total_ventas = sum(float(item['subtotal']) for item in ventas)
+    total_egresos = sum(float(item['total']) for item in egresos)
+    total_esperado = (float(total_ventas) - (float(total_egresos)))
+    return render_template('corte_venta.html', ventas = ventas, egresos = egresos, total_esperado = total_esperado)

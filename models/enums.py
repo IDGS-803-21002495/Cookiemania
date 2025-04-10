@@ -36,7 +36,7 @@ class EstadoLote(Enum):
 # Definir ENUM para el estado en que se encuentra una venta 
 class EstadoVenta(Enum):
     PENDIENTE = 'PENDIENTE'
-    PRODUCCION = 'PRODUCCION'
+    LISTO = 'LISTO'
     ENTREGADO = 'ENTREGADO'
     CANCELADO = 'CANCELADO'
 
