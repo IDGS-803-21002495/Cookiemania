@@ -70,7 +70,7 @@ def home():
     
     rol = current_user.rol
 
-    if rol == 'ADMIN' or 'VENDEDOR' or 'PRODUCCION':
+    if rol in ['ADMIN', 'VENDEDOR', 'PRODUCCION']:
         # Dirigir a index (cookiemania)
         return redirect(url_for('index'))
     else:

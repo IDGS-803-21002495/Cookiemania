@@ -37,21 +37,6 @@ def consulta_precios():
         })
 
     return resultados
-
-def verificar_existencias(galleta_id): 
-    existencias = db.session.query(
-        LoteProduccion.cantidad_disponible,
-        Galleta.nombre.label('galleta_nombre'),
-        Galleta.id
-    ).join(
-        Receta, LoteProduccion.receta_id == Receta.id
-    ).join(
-        Galleta, Receta.galleta_id == Galleta.id
-    ).filter(
-        Galleta.id == galleta_id  
-    ).first()
-
-    return existencias
     
 def calcular_detalles_venta(modalidad, cantidad, galleta_id):
     # Buscar la galleta en la base de datos
@@ -80,11 +65,6 @@ def calcular_detalles_venta(modalidad, cantidad, galleta_id):
         cantidad_unidades = int(cantidad) // galleta.peso
     else:
         return "Modalidad no válida", 400
-    
-    # Verificar existencias antes de proceder con la venta
-    existencia = verificar_existencias(galleta_id)
-    if existencia.cantidad_disponible < cantidad_unidades:
-        return None, 'No hay suficiente stock disponible'
 
     # Calcular subtotal
     subtotal = int(cantidad_unidades) * galleta.precio
@@ -142,12 +122,6 @@ def add_product():
         for item in carrito:
             if item['id_galleta'] == producto['id_galleta'] and item['tipo_venta'] == producto['tipo_venta']:
                 total_cantidad += item['cantidades_unidades']
-        
-        # Verificar si la cantidad total supera las existencias
-        existencias = verificar_existencias(producto['id_galleta'])
-        if total_cantidad > existencias.cantidad_disponible:
-            flash('No hay suficiente stock disponible para la cantidad solicitada.', 'danger')  
-            return redirect(url_for('clientes.index'))
         
         # Si no hay error, agregar el producto al carrito
         session.setdefault('carrito', [])

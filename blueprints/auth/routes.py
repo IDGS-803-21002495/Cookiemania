@@ -4,7 +4,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
 from models import db
 from models.usuario import Usuario  
-from .forms import LoginForm, VerifyCodeForm
+from .forms import LoginForm, VerifyCodeForm, RegistroForm
 from config import mail 
 import requests
 from functools import wraps
@@ -27,46 +27,49 @@ contraseñas_comunes = [
 
 @auth_bp.route('/crear_usuario', methods=['POST'])
 def create_user():
-    # Obtener los datos del formulario
-    nombre = request.form['nombre']
-    username = request.form['username']
-    email = request.form['email']
-    password = request.form['password']
-    # Asignar rol automáticamente como "Cliente"
-    rol = 'CLIENTE'
+    form = RegistroForm()
+    form_login = LoginForm()
+    if request.method == 'POST' and form.validate():
+        # Obtener los datos del formulario
+        nombre = form.nombre.data
+        username = form.nombre_usuario.data
+        email = form.correo.data
+        password = form.password.data
+        # Asignar rol automáticamente como "Cliente"
+        rol = 'CLIENTE'
 
-    print(password)
+        print(password)
 
-    # Validar que no exista un usuario con ese nombre de usuario o correo electrónico
-    existing_user = Usuario.query.filter((Usuario.username == username) | (Usuario.email == email)).first()
-    if existing_user:
-        flash('El nombre de usuario o correo electrónico ya está registrado', 'error')
-        return redirect(url_for('auth.login')) 
+        # Validar que no exista un usuario con ese nombre de usuario o correo electrónico
+        existing_user = Usuario.query.filter((Usuario.username == username) | (Usuario.email == email)).first()
+        if existing_user:
+            flash('El nombre de usuario o correo electrónico ya está registrado', 'error')
+            return redirect(url_for('auth.login')) 
+        
+        # Valirdar que la contraseña no sea comun 
+        if password in contraseñas_comunes: 
+            flash('Contraseña invalida, por favor, intente con otra.', 'error')
+            return redirect(url_for('auth.login')) 
+
+        # Crear una nueva instancia del usuario
+        nuevo_usuario = Usuario(
+            nombre=nombre,
+            username=username,
+            email=email,
+            password=password,  
+            rol=rol
+        )
+
+        # Guardar el nuevo usuario en la base de datos
+        db.session.add(nuevo_usuario)
+        db.session.commit()
+
+        # Redirigir a una página de éxito o al login
+        flash('Usuario creado con éxito!', 'success')
+        return redirect(url_for('auth.login'))
     
-    # Valirdar que la contraseña no sea comun 
-    if password in contraseñas_comunes: 
-        flash('Contraseña invalida, por favor, intente con otra.', 'error')
-        return redirect(url_for('auth.login')) 
-
-    # Crear una nueva instancia del usuario
-    nuevo_usuario = Usuario(
-        nombre=nombre,
-        username=username,
-        email=email,
-        password=password,  
-        rol=rol
-    )
-
-    # Guardar el nuevo usuario en la base de datos
-    db.session.add(nuevo_usuario)
-    db.session.commit()
-
-    # Iniciar sesión con el nuevo usuario si lo deseas (opcional)
-    login_user(nuevo_usuario)
-
-    # Redirigir a una página de éxito o al login
-    flash('Usuario creado con éxito!', 'success')
-    return redirect(url_for('auth.login'))
+    # En coso que falle la valudación del formulario
+    return render_template('login.html', form=form_login, form_registro=form)
 
 def verify_recaptcha(recaptcha_response):
     secret_key = "6Lcn7gQrAAAAAKdU0DzIzxEd7-gqWEdvEUolUB1V"
@@ -106,6 +109,7 @@ def role_required(rol):
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     form_login = LoginForm()
+    form_registro = RegistroForm()
     
     # Inicializar contador de intentos fallidos y tiempo de bloqueo
     if 'intentos_fallidos' not in session:
@@ -174,7 +178,7 @@ def login():
 
                 return redirect(url_for('auth.login'))
 
-    return render_template('login.html', form=form_login)
+    return render_template('login.html', form=form_login, form_registro = form_registro)
 
 @auth_bp.route('/verify_code', methods=['GET', 'POST'])
 def verify_code():

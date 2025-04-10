@@ -10,42 +10,50 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
   <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
   <script>
-    // Duración de la sesión en segundos (10 minutos)
-    const sessionDuration = 1 * 60 * 60; // 1 hora
+    // Obtener el ID del usuario actual desde Flask
+    const currentUserId = "{{ current_user.id if current_user.is_authenticated else 'guest' }}";
+    const sessionDuration = 1 * 60 * 60; // 1 hora en segundos
     let timeLeft;
-
-    // Inicializar el tiempo restante
+  
     function initializeTimer() {
+      const storedUserId = localStorage.getItem('userId');
       const storedTime = localStorage.getItem('timeLeft');
-      if (storedTime) {
-        timeLeft = parseInt(storedTime, 10);
-      } else {
+  
+      // Si no hay usuario en localStorage o cambió el usuario, reiniciar el tiempo
+      if (!storedUserId || storedUserId !== currentUserId) {
         timeLeft = sessionDuration;
+        localStorage.setItem('userId', currentUserId); // guardar nuevo usuario
+        localStorage.setItem('timeLeft', timeLeft);    // reiniciar tiempo
+      } else {
+        // Usuario igual, continuar desde donde se quedó
+        timeLeft = parseInt(storedTime, 10) || sessionDuration;
       }
     }
-
+  
     function startTimer() {
       const timerElement = document.getElementById('timer');
       const interval = setInterval(() => {
         if (timeLeft <= 0) {
           clearInterval(interval);
-          localStorage.removeItem('timeLeft'); // Limpiar el tiempo almacenado
-          window.location.href = "{{ url_for('auth.login') }}"; // Redirigir al login
+          localStorage.removeItem('timeLeft');
+          localStorage.removeItem('userId');
+          window.location.href = "{{ url_for('auth.login') }}";
         } else {
           const minutes = Math.floor(timeLeft / 60);
           const seconds = timeLeft % 60;
           timerElement.textContent = `Tiempo restante de sesión: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
           timeLeft--;
-          localStorage.setItem('timeLeft', timeLeft); // Almacenar el tiempo restante
+          localStorage.setItem('timeLeft', timeLeft);
         }
       }, 1000);
     }
-
+  
     window.onload = function () {
-      initializeTimer(); // Inicializar el cronómetro
-      startTimer(); // Iniciar el cronómetro
+      initializeTimer();
+      startTimer();
     };
   </script>
+  
 
 </head>
 

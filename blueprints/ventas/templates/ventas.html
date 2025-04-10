@@ -8,28 +8,30 @@
         <!-- Lista de opciones -->
         <div class="grid grid-cols-3 gap-4">
             <div class="col-span-2">
-                <button type="button"
-                    class="px-5 py-2.5 text-sm font-semibold w-full text-yellow-800 inline-flex items-center bg-white hover:bg-yellow-800 focus:ring-4 focus:outline-none rounded-lg text-center border-yellow-400">
-                    <svg class="w-6 h-6 text-yellow-800 dark:text-yellow-800" aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 25 25">
-                        <path fill="currentColor" d="M4 19v2c0 .5523.44772 1 1 1h14c.5523 0 1-.4477 1-1v-2H4Z" />
-                        <path fill="currentColor" fill-rule="evenodd"
-                            d="M9 3c0-.55228.44772-1 1-1h8c.5523 0 1 .44772 1 1v3c0 .55228-.4477 1-1 1h-2v1h2c.5096 0 .9376.38314.9939.88957L19.8951 17H4.10498l.90116-8.11043C5.06241 8.38314 5.49047 8 6.00002 8H12V7h-2c-.55228 0-1-.44772-1-1V3Zm1.01 8H8.00002v2.01H10.01V11Zm.99 0h2.01v2.01H11V11Zm5.01 0H14v2.01h2.01V11Zm-8.00998 3H10.01v2.01H8.00002V14ZM13.01 14H11v2.01h2.01V14Zm.99 0h2.01v2.01H14V14ZM11 4h6v1h-6V4Z"
-                            clip-rule="evenodd" />
-                    </svg>
-                    Corte de caja
-                </button>
+                <form action="{{url_for('venta.corte_venta')}}" method="get">
+                    <button type="submit"
+                        class="px-5 py-2.5 text-sm font-semibold w-full text-yellow-800 inline-flex items-center bg-white hover:bg-yellow-800 focus:ring-4 focus:outline-none rounded-lg text-center border-yellow-400">
+                        <svg class="w-6 h-6 text-yellow-800 dark:text-yellow-800" aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 25 25">
+                            <path fill="currentColor" d="M4 19v2c0 .5523.44772 1 1 1h14c.5523 0 1-.4477 1-1v-2H4Z" />
+                            <path fill="currentColor" fill-rule="evenodd"
+                                d="M9 3c0-.55228.44772-1 1-1h8c.5523 0 1 .44772 1 1v3c0 .55228-.4477 1-1 1h-2v1h2c.5096 0 .9376.38314.9939.88957L19.8951 17H4.10498l.90116-8.11043C5.06241 8.38314 5.49047 8 6.00002 8H12V7h-2c-.55228 0-1-.44772-1-1V3Zm1.01 8H8.00002v2.01H10.01V11Zm.99 0h2.01v2.01H11V11Zm5.01 0H14v2.01h2.01V11Zm-8.00998 3H10.01v2.01H8.00002V14ZM13.01 14H11v2.01h2.01V14Zm.99 0h2.01v2.01H14V14ZM11 4h6v1h-6V4Z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Corte de caja
+                    </button>
+                </form>
             </div>
             <div class="">
                 <form action="{{ url_for('pedidos.index') }}" method="get">
-                    <button type="submit" 
-                    class="inline-flex w-full items-center px-5 py-2.5 text-sm font-medium text-right text-white bg-yellow-700 rounded-lg hover:bg-yellow-800 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-800">
-                    Pedidos
-                    <span
-                        class="inline-flex items-center justify-center w-4 h-4 ms-2 text-xs font-semibold text-yellow-800 bg-yellow-200 rounded-full">
-                        {{ total_pendientes }}
-                    </span>
-                </button>
+                    <button type="submit"
+                        class="inline-flex w-full items-center px-5 py-2.5 text-sm font-medium text-right text-white bg-yellow-700 rounded-lg hover:bg-yellow-800 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-800">
+                        Pedidos
+                        <span
+                            class="inline-flex items-center justify-center w-4 h-4 ms-2 text-xs font-semibold text-yellow-800 bg-yellow-200 rounded-full">
+                            {{ total_pendientes }}
+                        </span>
+                    </button>
                 </form>
             </div>
         </div>
@@ -45,9 +47,11 @@
             <div class="bg-white p-4 rounded-xl text-center shadow-md">
                 {% if resultado.imagen %}
                 <div class="w-48 h-48 overflow-hidden rounded-md mx-auto">
-                    <img src="{{ url_for('static', filename='uploads/' ~ resultado.imagen) }}" class="w-full h-full object-cover" alt="Imagen de galleta">
+                    <img src="{{ url_for('static', filename='uploads/' ~ resultado.imagen) }}"
+                        class="w-full h-full object-cover" alt="Imagen de galleta">
                 </div>
                 {% endif %}
+                <p class="text-xs text-gray-400">Existencias {{resultado.existencias_totales}}</p>
                 <p class="font-semibold text-yellow-700">Galleta {{resultado.nombre}}</p>
                 <p class="font-extralight text-gray-500 pb-2 text-sm">{{resultado.gramaje}} gramos</p>
                 <ul class="items-end text-left px-5">
@@ -136,7 +140,7 @@
                             value="{{ item['cantidad'] }}"
                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-20 p-1.5"
                             required min="1" data-id="{{ item['id_galleta'] }}" data-modalidad="{{ item['modalidad'] }}"
-                            onkeydown="validateAndSubmit(event, this)" oninput="actualizar_item(this)"">
+                            oninput="actualizar_item(this)"">
 
                     </form>
                 </div>
@@ -148,12 +152,13 @@
 
         </div>
 
-        <div class="mt-6 bg-gray-100 p-4 rounded-lg">
+        <div class=" mt-6 bg-gray-100 p-4 rounded-lg">
             <p class="text-base font-semibold py-2">Total: ${{total}}</p>
             <form action="{{url_for('venta.add_venta')}}" method="post">
-                {{ form.csrf_token }}
+                            {{ form.csrf_token }}
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="w-full bg-yellow-500 py-3 rounded-lg text-white">Registrar venta</button>
+                <button id="btn-venta" type="submit"
+                                class="w-full bg-yellow-500 py-3 rounded-lg text-white">Registrar venta</button>
             </form>
         </div>
     </aside>
@@ -252,10 +257,8 @@
         const id_galleta = inputElement.getAttribute('data-id');
         const modalidad = inputElement.getAttribute('data-modalidad');
 
-         if (isNaN(cantidad) || cantidad <= 0) {
-            showFlashMessage('Por favor, ingrese una cantidad válida (número positivo).', 'danger');
-            return;  
-        }
+
+        validarCamposCantidad();
 
         // Construcción de la URL de forma dinámica
         const url = `{{ url_for('venta.update_product', id_galleta='0', modalidad='default', cantidad='0') }}`.replace('0', id_galleta).replace('default', modalidad).replace('0', cantidad);
@@ -319,18 +322,54 @@
         const cantidad = inputElement.value;
 
         if (event.key === 'Enter') {
-            
+
             if (isNaN(cantidad) || cantidad <= 0) {
-                event.preventDefault();  
+                event.preventDefault();
                 showFlashMessage('Por favor, ingrese una cantidad válida (número positivo).', 'danger');
-                return;  
+                return;
             }
 
-            
+
             actualizar_item(inputElement);
-            event.preventDefault();  
+            event.preventDefault();
         }
     }
+
+    // Esta función verifica todos los campos numéricos y habilita/deshabilita el botón
+    function validarCamposCantidad() {
+        const inputs = document.querySelectorAll('input[type="number"]');
+        const btnVenta = document.getElementById('btn-venta');
+
+        let todosValidos = true;
+
+        inputs.forEach(input => {
+            const valor = input.value;
+
+            // Validamos: que sea número, entero y mayor a 0
+            if (
+                isNaN(valor) ||
+                valor.trim() === '' ||
+                valor <= 0 ||
+                !Number.isInteger(Number(valor))
+            ) {
+                todosValidos = false;
+                input.classList.add('border-red-500');
+            } else {
+                input.classList.remove('border-red-500');
+            }
+        });
+
+        // Habilitar o deshabilitar el botón según la validación
+        btnVenta.disabled = !todosValidos; // Si todosValidos es true, el botón se habilita
+    }
+
+
+
+    // Función al cambiar el valor de los inputs
+    const inputs = document.querySelectorAll('input[type="number"]');
+    inputs.forEach(input => {
+        input.addEventListener('input', validarCamposCantidad);
+    });
 
 </script>
 
