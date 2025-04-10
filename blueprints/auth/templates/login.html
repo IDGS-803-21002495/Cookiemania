@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Cookiemania - Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Flowbite / Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+
+<body>
+    <div class="flex h-screen">
+        <div class="w-1/2">
+            <img src="{{ url_for('static', filename='img/fondoGalletas2.jpg') }}" alt="Galletas"
+                class="h-full w-full object-cover">
+        </div>
+        <div class="w-1/2 flex flex-col justify-center items-center bg-white p-10">
+            <h2 class="text-3xl font-bold text-gray-700 mb-4">Login</h2>
+            <div class="bg-gray-200 rounded-full p-4 mb-4">
+                <svg class="w-12 h-12 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                    viewBox="0 0 20 20">
+                    <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm0 5a3 3 0 1 1 0 6 
+                         3 3 0 0 1 0-6Zm0 13a8.949 8.949 0 0 1-4.951-1.488A3.987 3.987 0 0 1 
+                         9 13h2a3.987 3.987 0 0 1 3.951 3.512A8.949 8.949 0 0 1 10 18Z" />
+                </svg>
+            </div>
+
+            <form method="POST" action="{{ url_for('auth.login') }}" class="w-80">
+                {{ form.csrf_token }}
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="w-full p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <label class="block text-gray-700 mb-1">Nombre de usuario</label>
+                {{ form.username(class="w-full border border-gray-300 rounded-md p-2 mb-4
+                focus:ring-2 focus:ring-blue-500") }}
+                {% for error in form.username.errors %}
+                <p class="text-red-500 text-sm">{{ error }}</p>
+                {% endfor %}
+
+                <label class="block text-gray-700 mb-1">Contraseña</label>
+                {{ form.password(class="w-full border border-gray-300 rounded-md p-2 mb-4
+                focus:ring-2 focus:ring-blue-500") }}
+                {% for error in form.password.errors %}
+                <p class="text-red-500 text-sm">{{ error }}</p>
+                {% endfor %}
+
+                <!-- reCAPTCHA -->
+                <div class="g-recaptcha mb-4" data-sitekey="6Lcn7gQrAAAAAPLf8pGCITzYP4JJPEQ0yUy_0c8L"></div>
+
+                <button type="submit" class="w-full bg-yellow-500 text-white font-bold py-2 rounded-md 
+                           hover:bg-yellow-600 transition mb-4">
+                    Ingresar
+                </button>
+                <div class="text-sm font-medium text-gray-700 dark:text-gray-700">
+                    No registrado?
+                    <a href="#" id="crear-usuario" class="text-blue-700 hover:underline dark:text-blue-500">
+                        Crear un usuario
+                    </a>
+                </div>
+            </form>
+            <!-- Main modal -->
+            <div id="authentication-modal" tabindex="-1" aria-hidden="true"
+                class="hidden fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full dark:bg-white-200 h-full bg-opacity-50 shadow-gray-700">
+                <div class="relative p-4 w-full max-w-md">
+                    <!-- Modal content -->
+                    <div class="bg-white rounded-lg shadow dark:bg-white-200">
+                        <!-- Modal header -->
+                        <div
+                            class="flex items-center justify-between p-4 border-b border-white-200 dark:border-gray-600">
+                            <h3 class="text-xl font-semibold text-white-900 dark:text-gray-700">
+                                Crear una cuenta
+                            </h3>
+                            <button type="button" id="cerrar-modal"
+                                class="text-gray-400 hover:bg-yellow-500 hover:text-gray-900 rounded-lg text-sm w-8 h-8 flex justify-center items-center">
+                                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 14 14">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="2" d="M1 1l12 12M13 1L1 13" />
+                                </svg>
+                                <span class="sr-only">Cerrar modal</span>
+                            </button>
+                        </div>
+                        <!-- Modal body -->
+                        <div class="p-4">
+                            <form class="p-4 md:p-3" method="POST" action="{{ url_for('auth.create_user') }}">
+                                {{ form.csrf_token }}
+                                <div class="grid gap-2 mb-2">
+                                    <div class="col-span-2">
+                                        <label for="nombre" class="block text-gray-700">Nombre</label>
+                                        <input type="text" name="nombre" id="nombre"
+                                            class="w-full border border-gray-300 rounded-md p-2 mb-2" required>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label for="username" class="block text-gray-700">Nombre de Usuario</label>
+                                        <input type="text" name="username" id="username"
+                                            class="w-full border border-gray-300 rounded-md p-2 mb-2" required>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label for="email" class="block text-gray-700">Correo Electrónico</label>
+                                        <input type="email" name="email" id="email"
+                                            class="w-full border border-gray-300 rounded-md p-2 mb-2" required>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label for="password" class="block text-gray-700">Contraseña</label>
+                                        <input type="password" name="password" id="password"
+                                            class="w-full border border-gray-300 rounded-md p-2 mb-2" required>
+                                    </div>
+                                </div>
+                                <button type="submit"
+                                    class="text-white inline-flex items-center bg-yellow-500 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-yellow-600 dark:hover:bg-yellow-500 dark:focus:ring-blue-800">
+                                    <svg class="me-1 -ms-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd"
+                                            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                                            clip-rule="evenodd"></path>
+                                    </svg>
+                                    Agregar usuario
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@1.5.3/dist/flowbite.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const btnCrearUsuario = document.getElementById("crear-usuario");
+            const modal = document.getElementById("authentication-modal");
+            const btnCerrarModal = document.getElementById("cerrar-modal");
+
+            btnCrearUsuario.addEventListener("click", function (event) {
+                event.preventDefault();
+                modal.classList.remove("hidden");
+                modal.classList.add("flex");
+            });
+
+            btnCerrarModal.addEventListener("click", function () {
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+            });
+
+            window.addEventListener("click", function (event) {
+                if (event.target === modal) {
+                    modal.classList.add("hidden");
+                    modal.classList.remove("flex");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

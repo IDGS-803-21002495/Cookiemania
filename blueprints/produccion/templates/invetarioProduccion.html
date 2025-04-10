@@ -1,0 +1,184 @@
+{% extends "layout.html" %}
+
+{% block container %}
+
+{% import "_macros.html" as macro %}
+
+<div class="">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="fixed top-5 right-5 space-y-4 z-50">
+            {% for category, message in messages %}
+                <div class="relative flex items-center max-w-xs px-6 py-4 rounded-lg shadow-lg text-white
+                    {% if category == 'success' %} bg-green-500 
+                    {% elif category == 'warning' %} bg-yellow-500 
+                    {% elif category == 'danger' or category == 'error' %} bg-red-500 
+                    {% elif category == 'info' %} bg-blue-500 
+                    {% else %} bg-gray-500 {% endif %} 
+                    animate-fadeIn">
+                    
+                    <div class="mr-3">
+                        {% if category == 'success' %}
+
+                        <h1></h1>
+                        {% elif category == 'warning' %}
+                           <h1></h1>
+                        {% elif category == 'danger' or category == 'error' %}
+                            <h1></h1>
+                        {% elif category == 'info' %}
+                            <h1></h1>
+                        {% else %}
+                           <h1></h1>
+                        {% endif %}
+                    </div>
+    
+                    <span>{{ message }}</span>
+    
+                    <!-- Botón para cerrar el mensaje -->
+                    <button onclick="this.parentElement.classList.add('animate-fadeOut'); setTimeout(() => this.parentElement.remove(), 500);" class="absolute top-2 right-3 text-white text-lg font-bold">
+                        &times;
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% endwith %}
+    
+    <!-- Animaciones -->
+    <style>
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+    
+        .animate-fadeOut {
+            animation: fadeOut 0.5s ease-in-out forwards;
+        }
+    
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+    </style>
+    
+    <!-- Botones en la parte superior -->
+    <div class="w-full flex justify-start space-x-3 z-40 mb-4">
+        <!-- Botón para registrar merma -->
+        <a href="{{url_for('produccion.merma')}}"
+            class="flex items-center px-6 py-3 rounded-md bg-yellow-200 hover:bg-yellow-300 text-black shadow-lg transition-all duration-300 transform hover:scale-105">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M12 6v12m6-6H6"/>
+            </svg>
+            Registrar Merma
+        </a>
+
+        <!-- Botón para abrir el modal de solicitud de producción -->
+        <button onclick="openModal()"
+            class="flex items-center px-6 py-3 rounded-md bg-yellow-200 hover:bg-yellow-300 text-black shadow-lg transition-all duration-300 transform hover:scale-105">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M12 4v16m8-8H4"/>
+            </svg>
+            Solicitar Producción
+        </button>
+    </div>
+    
+    <div class="p-4 border-dashed rounded-lg dark:border-gray-700">
+        
+        <h2 class="flex items-center text-3xl font-bold dark:text-gray-600">Inventario Productos</h2>
+        
+        <h3 class="flex items-center text-2xl font-bold dark:text-gray-600 mb-5"></h3>
+        <div class="grid grid-cols-4 gap-4 mb-4">
+            
+            {% for galleta in galletas %}
+            <div class="relative border-white-20 rounded-lg shadow-xl dark:shadow-gray-300 
+                {% if galleta.cantidad_total > 100 %}  
+                    bg-green-300 dark:bg-green-700 
+                {% elif galleta.cantidad_total >= 50 and galleta.cantidad_total <= 100 %}  
+                    bg-yellow-300 dark:bg-yellow-700 
+                {% elif galleta.cantidad_total < 50 %}  
+                    bg-red-300 dark:bg-red-700 
+                {% endif %} 
+                max-w-xs p-5">
+
+                <div class="flex justify-between items-start">
+                    <a href="#">
+                        <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-700">{{ galleta.nombre }}</h5>
+                    </a>
+                    
+                    <div class="flex flex-col items-end">
+                        {% if galleta.imagen %}
+                        <img class="rounded-lg w-20 h-20 mb-2" src="{{ url_for('static', filename='uploads/' ~ galleta.imagen) }}" alt="" />
+                        {% endif %}
+                        <h5 class="text-xl font-bold text-yellow-700 dark:text-yellow-400">{{ galleta.cantidad_total }}</h5>
+                    </div>
+
+                    <h5 style="display: none;">{{galleta.id}}</h5>
+                    
+                </div>
+
+                <p class="text-sm font-semibold text-black-800 dark:text-black-300">
+                    Estado: {{ galleta.estatus_lote }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de solicitud -->
+<div id="productionModal" class="fixed inset-0 bg-black bg-opacity-30 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-100">
+        <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-medium text-gray-800 dark:text-gray-800">Solicitud de Producción</h3>
+            
+            <form class="mt-4 space-y-4" method="POST" action="{{ url_for('produccion.solicitar') }}" id="productionForm">
+                {{form.csrf_token}}
+                <input type="hidden" name="csrf_token" value="{{csrf_token() }}">
+
+                <div>
+                   <label for="product" class="block text-sm font-medium text-gray-700">Seleccionar Producto</label>
+                        <select id="product" name="product" class="mt-1 block w-full pl-3 pr-10 py-2 border-gray-300 focus:ring-blue-500 focus:border-blue-500">
+                            {% for galleta in galletas %}
+                                <option value="{{ galleta.id }}">{{ galleta.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                </div>
+                <div class="mt-4 flex justify-between">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Continuar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Funciones para abrir/cerrar modales
+    function openModal() {
+        document.getElementById('productionModal').classList.remove('hidden');
+    }
+    
+    function closeModal() {
+        document.getElementById('productionModal').classList.add('hidden');
+    }
+
+    // Cerrar modal al hacer clic fuera del contenido
+    window.onclick = function(event) {
+        const productionModal = document.getElementById('productionModal');
+        if (event.target === productionModal) {
+            closeModal();
+        }
+    };
+</script>
+
+{% endblock %}
