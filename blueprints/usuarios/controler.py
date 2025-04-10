@@ -4,6 +4,8 @@ from models import db
 from flask import flash
 import logging
 
+# para regustrar Usuario
+
 
 def registrarUsuario(nombre, username, email, rol, password):
     # Verificar si ya existe un usuario con el mismo nombre de usuario

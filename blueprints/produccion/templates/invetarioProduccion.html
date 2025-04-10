@@ -4,7 +4,6 @@
 
 {% import "_macros.html" as macro %}
 
-<div class="">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         <div class="fixed top-5 right-5 space-y-4 z-50">
@@ -129,7 +128,7 @@
             {% endfor %}
         </div>
     </div>
-</div>
+
 
 <!-- Modal de solicitud -->
 <div id="productionModal" class="fixed inset-0 bg-black bg-opacity-30 overflow-y-auto h-full w-full hidden z-50">
@@ -148,6 +147,11 @@
                                 <option value="{{ galleta.id }}">{{ galleta.nombre }}</option>
                             {% endfor %}
                         </select>
+                        <div class="mb-4">
+                            <label for="cantidad" class="block text-sm font-medium text-gray-700 mb-2">Cantidad de Lotes a producir</label>
+                            <input type="number" name="cantidad_lote" id="cantidad_lote" min="1" max = "30"required
+                                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
                 </div>
                 <div class="mt-4 flex justify-between">
                     <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">

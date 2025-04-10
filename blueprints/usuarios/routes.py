@@ -7,6 +7,8 @@ from models import db
 from flask_login import login_required, current_user
 from roles import require_role
 
+# Ruta para entrar y ver la tabla usuarios
+
 
 @usuarios_bp.route('/')
 @login_required
@@ -16,6 +18,8 @@ def usuarios():
     usuarios = getUsuario()
 
     return render_template("usuarios.html", form=usuario_class, usuarios=usuarios)
+
+# Ruta para registrar
 
 
 @usuarios_bp.route('/registros', methods=["GET", "POST"])
@@ -35,6 +39,8 @@ def registros():
         return redirect(url_for('usuarios.usuarios'))
 
     return render_template("insertarUsuario.html", form=registrar_class)
+
+# Ruta para actualizar
 
 
 @usuarios_bp.route('/actualizar/<int:usuario_id>', methods=['GET', 'POST'])
@@ -59,6 +65,8 @@ def actualizar(usuario_id):
     registrar_class.rol.data = usuario.rol
 
     return render_template("verdetalle_usuario.html", form=registrar_class, usuario=usuario)
+
+# ruta para eliminar
 
 
 @usuarios_bp.route('/eliminar/<int:usuario_id>', methods=["GET", "POST"])

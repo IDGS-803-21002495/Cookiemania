@@ -10,6 +10,11 @@ from wtforms.validators import DataRequired, NumberRange, AnyOf, InputRequired
 class soliForm(FlaskForm):
     product = SelectField('product', choices=[], coerce=int, validators=[
                           DataRequired(message="Por favor seleccione un producto")])
+    cantidad_lote = IntegerField('cantidad_lote', [
+        validators.DataRequired(
+            message='Ingrese la cantidad de lotes que desea producir'),
+        NumberRange(min=1, max=30, message="La cantidad debe ser mayor a 0.")
+    ])
 
 
 class estatusForm(Form):
@@ -23,6 +28,8 @@ class estatusForm(Form):
             message="Selecciona un estatus válido."
         )
     ])
+
+# Form de merma
 
 
 class MermaForm(Form):

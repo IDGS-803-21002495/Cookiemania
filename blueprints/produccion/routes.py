@@ -8,8 +8,8 @@ from roles import require_role
 
 
 @produccion_bp.route('/')
-# @login_required
-# @require_role(['ADMIN', 'VENDEDOR', 'PRODUCCION'])
+@login_required
+@require_role(['ADMIN', 'VENDEDOR', 'PRODUCCION'])
 def produccion():
 
     galletas = getGalleta()
@@ -47,11 +47,12 @@ def solicitar():
 
     if request.method == "POST" and sol_clase.validate():
         id = int(sol_clase.product.data)
+        cantidad_lotes = int(sol_clase.cantidad_lote.data)
 
-        resultado = procesarproduccion(id)
+        resultado = procesarproduccion(id, cantidad_lotes)
 
         flash(resultado["mensaje"],
-              "success" if "registrado" in resultado["mensaje"] else "danger")
+              "success" if "registrados" in resultado["mensaje"] else "danger")
 
         return redirect(url_for("produccion.produccion"))
 
@@ -60,8 +61,8 @@ def solicitar():
 
 # Manejo de estatus
 @produccion_bp.route('/estatusProduccion', methods=["GET", "POST"])
-# @login_required
-# @require_role(['PRODUCCION'])
+@login_required
+@require_role(['PRODUCCION'])
 def estatusProduccion():
     form = estatusForm(request.form)
     estatusLote = estatusGalleta()

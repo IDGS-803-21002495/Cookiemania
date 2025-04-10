@@ -88,7 +88,7 @@ def getFechaCaducidas():
 #  Función para procesar la producción de galletas
 
 
-def procesarproduccion(id):
+def procesarproduccion(id, cantidad_lotes):
     # Consulta para traer los ingredientes de la receta
     productosReceta = (db.session.query(
         DetalleReceta.cantidad_insumo,
@@ -104,27 +104,31 @@ def procesarproduccion(id):
     if not productosReceta:
         return {"mensaje": "No se encontraron ingredientes para la receta"}
 
-    # Insertar el nuevo lote de producción
+    # Insertar los nuevos lotes de producción
     fecha_produccion = datetime.now()
-    fecha_caducidad = fecha_produccion + timedelta(days=15)
 
     try:
-        nuevo_lote = LoteProduccion(
-            fecha_produccion=fecha_produccion,
-            fecha_caducidad=fecha_caducidad,
-            cantidad_disponible=productosReceta[0].cantidad_lote,
-            estado_lote="SOLICITADO",
-            receta_id=id
-        )
+        for _ in range(cantidad_lotes):
+            fecha_caducidad = fecha_produccion + timedelta(days=15)
 
-        db.session.add(nuevo_lote)
+            nuevo_lote = LoteProduccion(
+                fecha_produccion=fecha_produccion,
+                fecha_caducidad=fecha_caducidad,
+                # Cantidad por lote
+                cantidad_disponible=productosReceta[0].cantidad_lote,
+                estado_lote="SOLICITADO",
+                receta_id=id
+            )
+
+            db.session.add(nuevo_lote)
+
         db.session.commit()
 
-        return {"mensaje": "Lote de producción registrado correctamente (estado: SOLICITADO)"}
+        return {"mensaje": f"{cantidad_lotes} lotes de producción registrados correctamente (estado: SOLICITADO)"}
 
     except Exception as e:
         db.session.rollback()
-        return {"mensaje": f"Error al registrar el lote: {str(e)}"}
+        return {"mensaje": f"Error al registrar los lotes: {str(e)}"}
 
 
 def actualizar_estado_lote(lote_id):
@@ -222,6 +226,7 @@ def estatusGalleta():
     galletas = (db.session.query(
 
         Galleta.nombre,
+        Galleta.imagen,
         LoteProduccion.cantidad_disponible,
         LoteProduccion.id,
         func.sum(LoteProduccion.cantidad_disponible).label("cantidad_total"),
@@ -231,7 +236,7 @@ def estatusGalleta():
         .outerjoin(LoteProduccion, LoteProduccion.receta_id == Receta.id)
         .filter(LoteProduccion.estado_lote != 'TERMINADO', LoteProduccion.estado_lote != 'CANCELADO')
         # Añadir estado_lote al group_by
-        .group_by(Galleta.nombre, LoteProduccion.estado_lote, LoteProduccion.cantidad_disponible, LoteProduccion.id)
+        .group_by(Galleta.nombre, LoteProduccion.estado_lote, LoteProduccion.cantidad_disponible, LoteProduccion.id, Galleta.imagen)
         .all())
 
     return galletas

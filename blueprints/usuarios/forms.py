@@ -7,6 +7,8 @@ def validate_username(form, field):
         raise ValidationError(
             'El nombre de usuario solo puede contener letras, números, puntos y guiones bajos.')
 
+# para la contraseña
+
 
 def validate_password(form, field):
     password = field.data
