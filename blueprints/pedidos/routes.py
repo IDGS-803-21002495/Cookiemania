@@ -1,9 +1,10 @@
 import datetime
 from . import pedidos_bp
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, request, url_for, flash
 from flask_login import login_required, current_user
 from roles import require_role
 import logging
+from datetime import datetime
 from models import db, Venta, DetalleVenta, Galleta, Usuario, LoteProduccion, Receta
 from sqlalchemy import func
 
@@ -22,8 +23,8 @@ def registrar_log_modificacion(usuario_id, venta_id, descripcion, cantidad, subt
 def log_error(error_message):
     logging.error(f"Error: {error_message}")
 
-def recuperar_pedidos():
-    consulta = (
+def recuperar_pedidos(filtro_estado=None):
+    query = (
         db.session.query(
             Venta.id.label('venta_id'),
             Usuario.nombre.label('cliente_nombre'),
@@ -37,11 +38,18 @@ def recuperar_pedidos():
         .join(Usuario, Venta.cliente_id == Usuario.id)  
         .join(DetalleVenta, Venta.id == DetalleVenta.venta_id)  
         .join(Galleta, DetalleVenta.galleta_id == Galleta.id)  
-        .group_by(Venta.id, Usuario.nombre, Venta.estado, Venta.fecha_registro, DetalleVenta.tipo_venta, DetalleVenta.cantidad_presentacion, Galleta.nombre)
-        .all()  
     )
 
+    # Aplica filtro si se recibe estado
+    if filtro_estado:
+        query = query.filter(Venta.estado == filtro_estado)
 
+    query = query.group_by(
+        Venta.id, Usuario.nombre, Venta.estado, Venta.fecha_registro,
+        DetalleVenta.tipo_venta, DetalleVenta.cantidad_presentacion, Galleta.nombre
+    )
+
+    consulta = query.all()
 
     # Transformar la consulta en un diccionario anidado
     ventas_dict = {}
@@ -62,6 +70,8 @@ def recuperar_pedidos():
             venta_estatus = 'Cancelado'
         elif venta_estatus == 'ENTREGADO':
             venta_estatus = 'Entregado'
+        elif venta_estatus == 'LISTO':
+            venta_estatus = 'Listo'
         
 
         # Agregar venta si no esta ya en el diccionario
@@ -101,15 +111,18 @@ def recuperar_pedidos():
     
     return ventas_dict
     
-# Mostrar todos los pedidos 
 @pedidos_bp.route('/', methods=['GET', 'POST'])
 @login_required
 @require_role(['ADMIN','VENDEDOR'])
 def index():
-    # Recuperar todos los pedidos
-    pedidos_venta = recuperar_pedidos()
-    # Mostrar pantalla inicial
-    return render_template('pedidos.html', pedidos = pedidos_venta)
+    # Obtener filtro desde parámetros de la URL
+    estado_filtro = request.args.get('estado')  # Ejemplo: 'PENDIENTE', 'ENTREGADO'
+
+    # Recuperar pedidos con el filtro aplicado
+    pedidos_venta = recuperar_pedidos(estado_filtro)
+
+    return render_template('pedidos.html', pedidos=pedidos_venta, estado_actual=estado_filtro)
+
 
 # Cancelar un pedido (su estatus pasa a CANCELADO)
 @pedidos_bp.route('/cancelar/<int:venta_id>', methods = ['POST'])
@@ -131,12 +144,50 @@ def cancelar(venta_id):
 
     # Actualizar estatus 
     venta.estado = 'CANCELADO'
+    venta.vendedor_id = current_user.id 
     db.session.commit()
 
     # Mostrar mensaje flash 
     flash(f"Pedido cancelado", "warning")
 
     return redirect(url_for('pedidos.index'))
+
+# Cancelar un pedido (su estatus pasa a CANCELADO)
+@pedidos_bp.route('/entregar/<int:venta_id>', methods = ['POST'])
+@login_required
+@require_role(['ADMIN','VENDEDOR'])
+def entregar(venta_id):
+    # Obtener venta con el id
+    venta = Venta.query.get_or_404(venta_id)
+
+    # Actualizar estatus 
+    venta.estado = 'ENTREGADO'
+    db.session.commit()
+
+    # Mostrar mensaje flash 
+    flash(f"Pedido entregado", "success")
+
+    return redirect(url_for('pedidos.index'))
+
+def verificar_existencias(galleta_id): 
+    # Usamos filter en lugar de filter_by
+    existencias = db.session.query(
+        func.sum(LoteProduccion.cantidad_disponible).label('cantidad_disponible'),
+        Galleta.nombre.label('galleta_nombre'),
+        Galleta.id
+    ).join(
+        Receta, LoteProduccion.receta_id == Receta.id
+    ).join(
+        Galleta, Receta.galleta_id == Galleta.id
+    ).filter(
+        Galleta.id == galleta_id
+    ).filter(
+        LoteProduccion.estado_lote == 'TERMINADO'
+    ).group_by(
+        Galleta.id
+    ).first()
+
+    return existencias
 
 @pedidos_bp.route('/atender/<int:venta_id>', methods=['POST'])
 @require_role(['ADMIN','VENDEDOR'])
@@ -148,24 +199,24 @@ def atender(venta_id):
         Galleta.nombre.label('galleta_nombre'),
         Receta.id.label('receta_id'),
         func.sum(DetalleVenta.cantidad_unidades).label('unidades_totales'),
-        func.sum(DetalleVenta.precio_unitario * DetalleVenta.cantidad_unidades).label('total_venta'),
-        LoteProduccion.cantidad_disponible.label('unidades_disponibles')
+        func.sum(DetalleVenta.precio_unitario * DetalleVenta.cantidad_unidades).label('total_venta')
     ).join(
         DetalleVenta, DetalleVenta.galleta_id == Galleta.id
     ).join(
         Receta, Galleta.id == Receta.galleta_id
-    ).join(
-        LoteProduccion, LoteProduccion.receta_id == Receta.id
     ).filter(
         DetalleVenta.venta_id == venta_id
     ).group_by(
-        Galleta.id, Galleta.nombre, LoteProduccion.cantidad_disponible, Receta.id
+        Galleta.id, Galleta.nombre, Receta.id
     ).all()
 
+    
 
     # Comprobar si hay suficiente stock para cada lote de cada galleta
     for detalle in detalles_venta:
-        if detalle.unidades_totales > detalle.unidades_disponibles:
+        existencias = verificar_existencias(detalle.galleta_id)
+        unidades_disponibles = existencias.cantidad_disponible
+        if detalle.unidades_totales > unidades_disponibles:
             log_error(f"Stock insuficiente para el producto {detalle.galleta_nombre}.")
             flash(f'Stock insuficiente para completar el pedido de {detalle.galleta_nombre}.', 'error')
             return redirect(url_for('pedidos.index'))
@@ -203,10 +254,11 @@ def atender(venta_id):
             accion="Pedido entregado"
         )
 
-    # Si todo está bien, cambiar el estatus de la venta a "ENTREGADO"
+    # Si todo está bien, cambiar el estatus de la venta a "LISTO"
     venta = Venta.query.get(venta_id)
-    venta.estado = 'ENTREGADO'
-    venta.vendedor_id = current_user.id
+    venta.estado = 'LISTO'
+    venta.vendedor_id = current_user.id 
+    venta.fecha_atencion = datetime.now()
     db.session.commit()
 
     flash('Pedido atendido correctamente', 'success')

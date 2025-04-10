@@ -8,10 +8,12 @@
         <h1 class="text-2xl font-bold mb-4">Pedidos</h1>
 
         <div class="flex gap-2 mb-4">
-            <button class="px-4 py-2 bg-white rounded-lg">Todos</button>
-            <button class="px-4 py-2 bg-white text-green-900 rounded-lg">En proceso</button>
-            <button class="px-4 py-2 bg-white rounded-lg">Completos</button>
-        </div>
+            <a href="{{ url_for('pedidos.index') }}" class="px-4 py-2 bg-white rounded-lg {{ 'font-bold' if not estado_actual else '' }}">Todos</a>
+            <a href="{{ url_for('pedidos.index', estado='PENDIENTE') }}" class="px-4 py-2 bg-white rounded-lg {{ 'font-bold' if estado_actual == 'PENDIENTE' else '' }}">En proceso</a>
+            <a href="{{ url_for('pedidos.index', estado='LISTO') }}" class="px-4 py-2 bg-white rounded-lg {{ 'font-bold' if estado_actual == 'LISTO' else '' }}">Listos</a>
+            <a href="{{ url_for('pedidos.index', estado='ENTREGADO') }}" class="px-4 py-2 bg-white rounded-lg {{ 'font-bold' if estado_actual == 'ENTREGADO' else '' }}">Entregados</a>
+            <a href="{{ url_for('pedidos.index', estado='CANCELADO') }}" class="px-4 py-2 bg-white rounded-lg {{ 'font-bold' if estado_actual == 'CANCELADO' else '' }}">Cancelados</a>
+        </div>        
 
         <!-- lista de pedidos -->
         <div class="grid grid-cols-3 gap-6 mt-6">
@@ -19,8 +21,22 @@
             <div class="bg-white p-4 rounded-xl text-center shadow-md max-w-sm h-100">
                 <div class="flex justify-between">
                     <span class="font-bold text-lg">{{venta.cliente_nombre}}</span>
-                    <span
-                        class="px-2 py-1 rounded-md {{ 'bg-green-200 text-green-600 border-green-400' if 'Entregado' in venta.venta_estatus else 'bg-yellow-200 text-yellow-700 border-yellow-300' if 'Pendiente' in venta.venta_estatus else 'bg-red-200 text-red-600 border-red-300' }}">{{venta.venta_estatus}}</span>
+                    <span class="px-2 py-1 rounded-md
+                        {% if venta.venta_estatus == 'Pendiente' %}
+                            bg-yellow-200 text-yellow-700 border-yellow-300
+                        {% elif venta.venta_estatus == 'Cancelado' %}
+                            bg-red-200 text-red-600 border-red-300
+                        {% elif venta.venta_estatus == 'Listo' %}
+                            bg-green-200 text-green-600 border-green-400
+                        {% elif venta.venta_estatus == 'Entregado' %}
+                            bg-blue-200 text-blue-600 border-blue-400
+                        {% else %}
+                            bg-gray-200 text-gray-600 border-gray-300
+                        {% endif %}
+                    ">
+                        {{ venta.venta_estatus }}
+                    </span>
+
                 </div>
                 <p class="text-gray-500 text-sm text-left">{{venta.fecha_registro}}</p>
                 <div class="mt-4 space-y-4 flex-1 overflow-y-auto h-48 border-t border-gray-200">
@@ -62,11 +78,17 @@
                     </form>
                     <form action="{{ url_for('pedidos.atender', venta_id=venta_id) }}" method="post">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button class="bg-yellow-400 text-white px-4 rounded-lg py-2">Completar</button>
+                        <button class="bg-yellow-400 text-white px-4 rounded-lg py-2">Atender</button>
+                    </form>
+                    {% endif %}
+                    {% if venta.venta_estatus == 'Listo' %}
+                    <form action="{{ url_for('pedidos.entregar', venta_id=venta_id)}}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="bg-green-500 text-white px-4 rounded-lg py-2">Entregar</button>
                     </form>
                     {% endif %}
                 </div>
-                
+
             </div>
             {%endfor%}
         </div>
@@ -107,7 +129,7 @@
 <script>
     function closeAlert() {
         const alert = document.getElementById('flashMessage');
-        alert.style.display = 'none'; 
+        alert.style.display = 'none';
     }
 </script>
 

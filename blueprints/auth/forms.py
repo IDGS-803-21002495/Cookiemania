@@ -15,7 +15,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Ingresar')
 
 class VerifyCodeForm(FlaskForm):
-    code = StringField('Código de Verificación', validators=[DataRequired()])
+    code = StringField('Código de Verificación', validators=[DataRequired(message='Campo requerido')])
     submit = SubmitField('Verificar')
 
 class RegistroForm(FlaskForm):
