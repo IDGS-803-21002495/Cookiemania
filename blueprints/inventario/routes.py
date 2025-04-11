@@ -6,7 +6,7 @@ from flask import jsonify
 from flask import session
 import datetime
 from sqlalchemy import case
-from models import db, LoteInsumo, Insumo, PresentacionInsumo
+from models import db, LoteInsumo, Insumo, PresentacionInsumo, MermaInsumo
 from . import forms
 from decimal import InvalidOperation
 import datetime
@@ -336,6 +336,16 @@ def mermar_inventario():
     if cantidad_restante > 0:
         flash("No se pudo descontar la cantidad total desperdiciada", "danger")
     else:
+        merma = MermaInsumo(
+            cantidad_merma = cantidad_total_desperdiciada,
+            fecha = datetime.now(),
+            tipo = 'DESPERDICIO',
+            insumo_id = insumo_id
+        )
+
+        db.session.add(merma)
+        db.session.commit()
+
         flash("Cantidad desperdiciada descontada correctamente", "success")
 
     return redirect(url_for('inventario.mostrar_insumos'))

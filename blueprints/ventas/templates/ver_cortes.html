@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block container %}
+{% import "_macros.html" as macros %}
+<div class="p-6 bg-white rounded-lg">
+    <div class="pt-4">
+        <form action="{{url_for('venta.corte_venta')}}" method="get">
+            <div class="w-ful pt-5">
+                <button
+                    class="focus:outline-none text-white bg-yellow-500 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-semibold rounded-lg text-base text-center px-5 py-2.5 me-2 mb-2 dark:focus:ring-yellow-900">
+                    Finalizar corte en proceso
+                </button>
+            </div>
+        </form>
+    </div>
+    <div class="pt-6 overflow-y-auto max-h-24 mt-2">
+        <p class="text-xl text-gray-600 font-semibold">Cortes de venta realizados</p>
+        <table class="w-full text-sm text-left rtl:text-right ">
+            <thead class="text-xs text-gray-00 uppercase bg-gray-200">
+                <tr>
+                    <th scope="col" class="px-6 py-3">
+                        Número
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Fecha
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Monto inicial
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Total en caja
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Diferencia
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for corte in cortes %}
+                <tr class="odd:bg-white even:bg-gray-50 border-gray-300">
+                    <td class="px-6 py-4">
+                        {{corte.id}}
+                    </td>
+                    <td class="px-6 py-4">
+                        {{corte.fecha_corte}}
+                    </td>
+                    <td class="px-6 py-4">
+                        ${{corte.monto_inicial}}
+                    </td>
+                    <td class="px-6 py-4">
+                        ${{corte.total_caja}}
+                    </td>
+                    <td class="px-6 py-4">
+                        ${{corte.diferencia}}
+                    </td>
+                </tr>
+                {%endfor%}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

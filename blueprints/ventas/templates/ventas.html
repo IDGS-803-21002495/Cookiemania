@@ -7,8 +7,9 @@
     <main class="flex-1 p-6">
         <!-- Lista de opciones -->
         <div class="grid grid-cols-3 gap-4">
+            {% if current_user.rol == 'ADMIN' %}
             <div class="col-span-2">
-                <form action="{{url_for('venta.corte_venta')}}" method="get">
+                <form action="{{url_for('venta.ver_cortes')}}" method="get">
                     <button type="submit"
                         class="px-5 py-2.5 text-sm font-semibold w-full text-yellow-800 inline-flex items-center bg-white hover:bg-yellow-800 focus:ring-4 focus:outline-none rounded-lg text-center border-yellow-400">
                         <svg class="w-6 h-6 text-yellow-800 dark:text-yellow-800" aria-hidden="true"
@@ -22,6 +23,8 @@
                     </button>
                 </form>
             </div>
+            {% endif %}
+
             <div class="">
                 <form action="{{ url_for('pedidos.index') }}" method="get">
                     <button type="submit"
@@ -153,14 +156,14 @@
         </div>
 
         <div class=" mt-6 bg-gray-100 p-4 rounded-lg">
-            <p class="text-base font-semibold py-2">Total: ${{total}}</p>
-            <form action="{{url_for('venta.add_venta')}}" method="post">
+                        <p class="text-base font-semibold py-2">Total: ${{total}}</p>
+                        <form action="{{url_for('venta.add_venta')}}" method="post">
                             {{ form.csrf_token }}
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button id="btn-venta" type="submit"
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button id="btn-venta" type="submit"
                                 class="w-full bg-yellow-500 py-3 rounded-lg text-white">Registrar venta</button>
-            </form>
-        </div>
+                        </form>
+                </div>
     </aside>
 
 </div>
@@ -257,7 +260,17 @@
         const id_galleta = inputElement.getAttribute('data-id');
         const modalidad = inputElement.getAttribute('data-modalidad');
 
+        //  Verificamos si es un número entero > 0
+        if (
+            !/^\d+$/.test(cantidad) ||  
+            parseInt(cantidad) <= 0 
+        ) {
+            // Si no cumple, no llamamos al fetch
+            console.warn("Cantidad inválida, no se actualiza");
+            return;
+        }
 
+        // Llamamos a la validación que habilita/deshabilita botones
         validarCamposCantidad();
 
         // Construcción de la URL de forma dinámica
@@ -335,41 +348,39 @@
         }
     }
 
-    // Esta función verifica todos los campos numéricos y habilita/deshabilita el botón
     function validarCamposCantidad() {
         const inputs = document.querySelectorAll('input[type="number"]');
-        const btnVenta = document.getElementById('btn-venta');
+        const btnVenta = document.getElementById("btn-venta");
 
         let todosValidos = true;
 
-        inputs.forEach(input => {
-            const valor = input.value;
+        inputs.forEach((input) => {
+            const valorStr = input.value.trim();
+            const valor = Number(valorStr); // <-- Convertimos aquí
 
-            // Validamos: que sea número, entero y mayor a 0
             if (
                 isNaN(valor) ||
-                valor.trim() === '' ||
+                valorStr === "" ||
                 valor <= 0 ||
-                !Number.isInteger(Number(valor))
+                !Number.isInteger(valor)
             ) {
                 todosValidos = false;
-                input.classList.add('border-red-500');
+                input.classList.add("border-red-500");
             } else {
-                input.classList.remove('border-red-500');
+                input.classList.remove("border-red-500");
             }
         });
 
-        // Habilitar o deshabilitar el botón según la validación
-        btnVenta.disabled = !todosValidos; // Si todosValidos es true, el botón se habilita
+        btnVenta.disabled = !todosValidos;
     }
-
 
 
     // Función al cambiar el valor de los inputs
     const inputs = document.querySelectorAll('input[type="number"]');
-    inputs.forEach(input => {
-        input.addEventListener('input', validarCamposCantidad);
+    inputs.forEach((input) => {
+        input.addEventListener("input", validarCamposCantidad);
     });
+
 
 </script>
 
