@@ -93,6 +93,10 @@ def index():
 
 
 
+@app.route("/inventarioProduccion")
+def prueba():
+	return render_template("inventarioProducto.html")
+
 if __name__ == '__main__':
     csrf.init_app(app)
     with app.app_context():

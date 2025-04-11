@@ -2,7 +2,10 @@ from datetime import datetime
 from models.usuario import Usuario
 from models import db
 from flask import flash
+from sqlalchemy import or_
 import logging
+
+# para regustrar Usuario
 
 
 def registrarUsuario(nombre, username, email, rol, password):
@@ -36,7 +39,11 @@ def registrarUsuario(nombre, username, email, rol, password):
 
 
 def getUsuario():
-    usuarios = Usuario.query.filter(Usuario.estado == 'ACTIVO')
+    usuarios = Usuario.query.filter(
+        Usuario.estado == 'ACTIVO',
+        or_(Usuario.rol == 'VENDEDOR', Usuario.rol == 'PRODUCCION')
+    ).all()  # Asegúrate de llamar a .all() para obtener los resultados
+
     print(usuarios)
     return usuarios
 
