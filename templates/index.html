@@ -1,4 +1,33 @@
 {% extends "layout.html" %}
+
 {% block container %}
-Hola
+    <div class="container">
+        <h1 class="text-5xl font-extrabold dark:text-gray-400 mb-4">Dashboard de Ventas</h1>
+        
+        <div class="graph">
+            <h2></h2>
+            <div>{{ graph1_html | safe }}</div>
+        </div>
+
+        <div class="graph">
+            <h2></h2>
+            <div>{{ graph2_html | safe }}</div>
+        </div>
+
+        <div class="graph">
+            <h2></h2>
+            <div>{{ graph3_html | safe }}</div>
+        </div> 
+        
+        <div class="graph">
+            <h2></h2>
+            <div>{{ graph4_html | safe }}</div>
+        </div>
+
+        <div class="graph">
+            <h2></h2>
+            <div>{{ graph5_html | safe }}</div>
+        </div>
+        
+    </div>
 {% endblock %}
