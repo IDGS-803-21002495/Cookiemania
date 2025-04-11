@@ -17,3 +17,4 @@ package.json
 *.pyo
 acciones_usuarios.log
 auditoria_logs.log
+*.py[cod]
