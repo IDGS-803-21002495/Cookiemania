@@ -15,3 +15,5 @@ package-lock.json
 package.json
 *.pyc
 *.pyo
+acciones_usuarios.log
+auditoria_logs.log

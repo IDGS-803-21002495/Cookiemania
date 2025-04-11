@@ -1,0 +1,50 @@
+<!-- Botón para abrir el modal -->
+<button data-modal-target="editProveedorModal" data-modal-toggle="editProveedorModal"
+    class="p-2.5 text-sm font-medium text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300">
+    Editar
+</button>
+
+<!-- Modal -->
+<div id="editProveedorModal" tabindex="-1" aria-hidden="true"
+    class="hidden fixed inset-0 z-50  items-center justify-center w-full h-full bg-gray-900 bg-opacity-50">
+    <div class="relative w-full max-w-md bg-white rounded-lg shadow-lg">
+        <div class="flex justify-between items-center p-4 border-b">
+            <h3 class="text-xl font-semibold text-gray-900">Editar Proveedor</h3>
+            <button type="button" class="text-gray-400 hover:text-gray-900" data-modal-hide="editProveedorModal">
+                ✕
+            </button>
+        </div>
+        <div class="p-4">
+            <form method="POST" action="{{ url_for('proveedores.editar_proveedor') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="id" id="proveedor_id">
+                <div class="mb-4">
+                    <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
+                    <input type="text" id="nombre" name="nombre"
+                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label for="correo" class="block text-sm font-medium text-gray-700">Correo</label>
+                    <input type="email" id="correo" name="correo"
+                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label for="numero_telefonico" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                    <input type="text" id="numero_telefonico" name="numero_telefonico"
+                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label for="direccion" class="block text-sm font-medium text-gray-700">Dirección</label>
+                    <input type="text" id="direccion" name="direccion"
+                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" data-modal-hide="editProveedorModal"
+                        class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">Cancelar</button>
+                    <button type="submit"
+                        class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

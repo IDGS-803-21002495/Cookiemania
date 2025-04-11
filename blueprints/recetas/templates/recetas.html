@@ -1,0 +1,367 @@
+{# templates/recetas.html #} {% extends "layout.html" %} {% block container %}
+<div class="py-10 px-4" style="margin-left: 0 !important">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Catálogo de Recetas</h1>
+    <button
+      data-modal-target="crearRecetaModal"
+      data-modal-toggle="crearRecetaModal"
+      class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+    >
+      Agregar Receta
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+    {% for r in recetas %}
+    <div
+      class="bg-white rounded-lg shadow p-4 cursor-pointer w-full max-w-xs mx-auto"
+      data-modal-target="detalleRecetaModal-{{ r.id }}"
+      data-modal-toggle="detalleRecetaModal-{{ r.id }}"
+    >
+      <h2 class="text-xl font-semibold mb-2">Receta #{{ r.id }}</h2>
+      <p class="text-gray-700">Galleta: {{ r.galleta.nombre }}</p>
+      <p class="text-gray-700">Cantidad lote: {{ r.cantidad_lote }}</p>
+      {% if r.galleta.imagen %}
+      <img
+        src="{{ url_for('static', filename='uploads/' ~ r.galleta.imagen) }}"
+        alt="Imagen de la galleta"
+        class="mt-2 w-full h-32 object-cover rounded"
+      />
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% for r in recetas %}
+  <div
+    id="detalleRecetaModal-{{ r.id }}"
+    tabindex="-1"
+    class="hidden fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50"
+    aria-hidden="true"
+  >
+    <div class="flex items-center justify-center min-h-screen">
+      <div
+        class="bg-white rounded-lg shadow w-full max-w-4xl p-8 relative m-4"
+        style="max-height: calc(100vh - 2rem); overflow-y: auto"
+      >
+        <button
+          type="button"
+          class="absolute top-3 right-3 text-gray-500 hover:text-gray-900"
+          data-modal-hide="detalleRecetaModal-{{ r.id }}"
+        >
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293
+                   4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293
+                   4.293a1 1 0 01-1.414-1.414L8.586 10 4.293
+                   5.707a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            ></path>
+          </svg>
+        </button>
+
+        <h3 class="text-xl font-semibold mb-4">
+          Detalles de la Receta #{{ r.id }}
+        </h3>
+        <p class="mb-2"><strong>Galleta:</strong> {{ r.galleta.nombre }}</p>
+        <p class="mb-2">
+          <strong>Descripción Galleta:</strong> {{ r.galleta.descripcion }}
+        </p>
+        <p class="mb-2">
+          <strong>Estado:</strong> {{ r.galleta.estado_disponibilidad }}
+        </p>
+        <p class="mb-2">
+          <strong>Costo de Producción:</strong> {{ r.costo_produccion|round(2)
+          }}
+        </p>
+        <p class="mb-2">
+          <strong>Precio de Venta:</strong> {{ r.galleta.precio|round(2) }}
+        </p>
+        <p class="mb-2">
+          <strong>Cantidad Lote:</strong> {{ r.cantidad_lote }}
+        </p>
+        <p class="mb-2">
+          <strong>Descripción Receta:</strong> {{ r.descripcion }}
+        </p>
+
+        <p class="mt-4 font-semibold">Insumos:</p>
+        <ul class="list-disc ml-6 space-y-1">
+          {% for d in r.detallereceta %}
+          <li>
+            {{ d.insumo.nombre }}: {{ d.cantidad_insumo }} {{
+            d.insumo.unidad_medida }}
+          </li>
+          {% endfor %}
+        </ul>
+
+        <div class="mt-6 flex justify-end space-x-4">
+          <a
+            href="{{ url_for('recetas.editar_receta', receta_id=r.id) }}"
+            class="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-500"
+          >
+            Editar
+          </a>
+          <form
+            method="POST"
+            action="{{ url_for('recetas.eliminar_receta', receta_id=r.id) }}"
+          >
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button
+              type="submit"
+              class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              onclick="return confirm('¿Seguro que deseas eliminar esta receta?');"
+            >
+              Eliminar
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div
+  id="crearRecetaModal"
+  tabindex="-1"
+  class="hidden fixed inset-0 z-50 bg-black bg-opacity-50"
+  aria-hidden="true"
+>
+  <div class="flex items-center justify-center w-full h-full p-4">
+    <div
+      class="bg-white rounded-lg shadow w-full max-w-4xl p-8 relative m-4"
+      style="max-height: calc(100vh - 2rem); overflow-y: auto"
+    >
+      <button
+        type="button"
+        class="absolute top-3 right-3 text-gray-500 hover:text-gray-900"
+        data-modal-hide="crearRecetaModal"
+      >
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            fill-rule="evenodd"
+            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293
+               a1 1 0 111.414 1.414L11.414 10l4.293 4.293
+               a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293
+               a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707
+               a1 1 0 010-1.414z"
+            clip-rule="evenodd"
+          ></path>
+        </svg>
+      </button>
+
+      <h2 class="text-xl font-bold mb-4">Crear Nueva Receta</h2>
+      <form method="POST" enctype="multipart/form-data" id="wizardForm">
+        {{ form.hidden_tag() }}
+        <div id="wizardStep1" class="wizard-step">
+          <h3 class="text-lg font-semibold mb-2">1. Datos de la Galleta</h3>
+          <div class="mb-4">
+            <label class="block text-sm font-medium">Nombre Galleta</label>
+            {{ form.nombre_galleta(class_="w-full border rounded px-2 py-1") }}
+            {% for err in form.nombre_galleta.errors %}
+            <p class="text-red-500 text-sm">{{ err }}</p>
+            {% endfor %}
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium">Peso (gr)</label>
+            {{ form.peso_galleta(class_="w-full border rounded px-2 py-1") }} {%
+            for err in form.peso_galleta.errors %}
+            <p class="text-red-500 text-sm">{{ err }}</p>
+            {% endfor %}
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium">Descripción Galleta</label>
+            {{ form.descripcion_galleta(class_="w-full border rounded px-2
+            py-1") }} {% for err in form.descripcion_galleta.errors %}
+            <p class="text-red-500 text-sm">{{ err }}</p>
+            {% endfor %}
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium">Imagen</label>
+            {{ form.imagen_galleta(class_="block w-full text-sm text-gray-900
+            border border-gray-300 rounded-lg cursor-pointer bg-gray-50") }} {%
+            for err in form.imagen_galleta.errors %}
+            <p class="text-red-500 text-sm">{{ err }}</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div id="wizardStep2" class="wizard-step hidden">
+          <h3 class="text-lg font-semibold mb-2">2. Datos de la Receta</h3>
+          <div class="mb-4">
+            <label class="block text-sm font-medium">Cantidad de Lote</label>
+            {{ form.cantidad_lote(class_="w-full border rounded px-2 py-1") }}
+            {% for err in form.cantidad_lote.errors %}
+            <p class="text-red-500 text-sm">{{ err }}</p>
+            {% endfor %}
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium">Descripción Receta</label>
+            {{ form.descripcion_receta(class_="w-full border rounded px-2 py-1",
+            rows="3") }} {% for err in form.descripcion_receta.errors %}
+            <p class="text-red-500 text-sm">{{ err }}</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div id="wizardStep3" class="wizard-step hidden">
+          <h3 class="text-lg font-semibold mb-2">3. Insumos Necesarios</h3>
+          <div id="detallesContainer" data-index="{{ form.detalles|length }}">
+            {% for subform in form.detalles %}
+            <div class="detalle-item mb-4 p-2 border rounded relative">
+              <label class="block text-sm font-medium">
+                {{ subform.insumo_id.label.text }}
+              </label>
+              {{ subform.insumo_id(class_="w-full border rounded px-2 py-1") }}
+              {% for err in subform.insumo_id.errors %}
+              <p class="text-red-500 text-sm">{{ err }}</p>
+              {% endfor %}
+
+              <label class="block text-sm font-medium mt-2">
+                {{ subform.cantidad_insumo.label.text }}
+              </label>
+              {{ subform.cantidad_insumo(class_="w-full border rounded px-2
+              py-1") }} {% for err in subform.cantidad_insumo.errors %}
+              <p class="text-red-500 text-sm">{{ err }}</p>
+              {% endfor %}
+
+              <button
+                type="button"
+                class="btnRemoveDetalle bg-red-600 text-white px-2 py-1 mt-2"
+              >
+                Eliminar
+              </button>
+            </div>
+            {% endfor %}
+          </div>
+
+          <button
+            type="button"
+            id="addDetalle"
+            class="bg-gray-600 text-white px-2 py-1 mt-2"
+          >
+            Agregar Insumo
+          </button>
+        </div>
+
+        <div class="mt-6 flex justify-between">
+          <button
+            type="button"
+            id="btnPrevStep"
+            class="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 hidden"
+          >
+            Anterior
+          </button>
+          <button
+            type="button"
+            id="btnNextStep"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Siguiente
+          </button>
+          <button
+            type="submit"
+            id="btnSubmitWizard"
+            class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 hidden"
+          >
+            Guardar Receta
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function actualizarIndices(containerId) {
+    const container = document.getElementById(containerId);
+    const items = container.getElementsByClassName("detalle-item");
+    for (let i = 0; i < items.length; i++) {
+      const inputs = items[i].querySelectorAll("input, select, textarea");
+      inputs.forEach((input) => {
+        if (input.name) {
+          input.name = input.name.replace(
+            /detalles-\d+-/,
+            "detalles-" + i + "-"
+          );
+        }
+      });
+    }
+  }
+
+  let currentStep = 1;
+  const totalSteps = 3;
+  const stepElements = [
+    document.getElementById("wizardStep1"),
+    document.getElementById("wizardStep2"),
+    document.getElementById("wizardStep3"),
+  ];
+  const btnNext = document.getElementById("btnNextStep");
+  const btnPrev = document.getElementById("btnPrevStep");
+  const btnSubmit = document.getElementById("btnSubmitWizard");
+
+  function showStep(step) {
+    stepElements.forEach((el, index) => {
+      el.classList.toggle("hidden", index !== step - 1);
+    });
+    if (step === 1) {
+      btnPrev.classList.add("hidden");
+      btnNext.classList.remove("hidden");
+      btnSubmit.classList.add("hidden");
+    } else if (step === totalSteps) {
+      btnPrev.classList.remove("hidden");
+      btnNext.classList.add("hidden");
+      btnSubmit.classList.remove("hidden");
+    } else {
+      btnPrev.classList.remove("hidden");
+      btnNext.classList.remove("hidden");
+      btnSubmit.classList.add("hidden");
+    }
+  }
+
+  btnNext.addEventListener("click", () => {
+    if (currentStep < totalSteps) {
+      currentStep++;
+      showStep(currentStep);
+    }
+  });
+
+  btnPrev.addEventListener("click", () => {
+    if (currentStep > 1) {
+      currentStep--;
+      showStep(currentStep);
+    }
+  });
+
+  showStep(currentStep);
+
+  const addBtn = document.getElementById("addDetalle");
+  addBtn.addEventListener("click", function () {
+    const container = document.getElementById("detallesContainer");
+    const items = container.getElementsByClassName("detalle-item");
+    if (items.length > 0) {
+      const original = items[0];
+      const clone = original.cloneNode(true);
+      clone.querySelectorAll("input, select, textarea").forEach((el) => {
+        el.value = "";
+      });
+      container.appendChild(clone);
+      actualizarIndices("detallesContainer");
+    }
+  });
+
+  document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("btnRemoveDetalle")) {
+      const container = document.getElementById("detallesContainer");
+      const items = container.getElementsByClassName("detalle-item");
+      if (items.length > 1) {
+        e.target.closest(".detalle-item").remove();
+        actualizarIndices("detallesContainer");
+      } else {
+        alert("Debe haber al menos un insumo en la receta.");
+      }
+    }
+  });
+</script>
+{% endblock %}

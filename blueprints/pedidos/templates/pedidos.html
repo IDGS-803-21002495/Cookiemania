@@ -1,0 +1,136 @@
+{% extends "layout.html" %}
+
+{% block container %}
+{% import "_macros.html" as macros %}
+
+<div class="flex">
+    <main class="flex-1 p-6">
+        <h1 class="text-2xl font-bold mb-4">Pedidos</h1>
+
+        <div class="flex gap-2 mb-4">
+            <a href="{{ url_for('pedidos.index') }}" class="px-4 py-2 bg-white rounded-lg {{ 'font-bold' if not estado_actual else '' }}">Todos</a>
+            <a href="{{ url_for('pedidos.index', estado='PENDIENTE') }}" class="px-4 py-2 bg-white rounded-lg {{ 'font-bold' if estado_actual == 'PENDIENTE' else '' }}">En proceso</a>
+            <a href="{{ url_for('pedidos.index', estado='LISTO') }}" class="px-4 py-2 bg-white rounded-lg {{ 'font-bold' if estado_actual == 'LISTO' else '' }}">Listos</a>
+            <a href="{{ url_for('pedidos.index', estado='ENTREGADO') }}" class="px-4 py-2 bg-white rounded-lg {{ 'font-bold' if estado_actual == 'ENTREGADO' else '' }}">Entregados</a>
+            <a href="{{ url_for('pedidos.index', estado='CANCELADO') }}" class="px-4 py-2 bg-white rounded-lg {{ 'font-bold' if estado_actual == 'CANCELADO' else '' }}">Cancelados</a>
+        </div>        
+
+        <!-- lista de pedidos -->
+        <div class="grid grid-cols-3 gap-6 mt-6">
+            {% for venta_id, venta in pedidos.items() %}
+            <div class="bg-white p-4 rounded-xl text-center shadow-md max-w-sm h-100">
+                <div class="flex justify-between">
+                    <span class="font-bold text-lg">{{venta.cliente_nombre}}</span>
+                    <span class="px-2 py-1 rounded-md
+                        {% if venta.venta_estatus == 'Pendiente' %}
+                            bg-yellow-200 text-yellow-700 border-yellow-300
+                        {% elif venta.venta_estatus == 'Cancelado' %}
+                            bg-red-200 text-red-600 border-red-300
+                        {% elif venta.venta_estatus == 'Listo' %}
+                            bg-green-200 text-green-600 border-green-400
+                        {% elif venta.venta_estatus == 'Entregado' %}
+                            bg-blue-200 text-blue-600 border-blue-400
+                        {% else %}
+                            bg-gray-200 text-gray-600 border-gray-300
+                        {% endif %}
+                    ">
+                        {{ venta.venta_estatus }}
+                    </span>
+
+                </div>
+                <p class="text-gray-500 text-sm text-left">{{venta.fecha_registro}}</p>
+                <div class="mt-4 space-y-4 flex-1 overflow-y-auto h-48 border-t border-gray-200">
+                    <div class="relative overflow-x-auto">
+                        <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+                            <thead class="text-xs text-gray-900 uppercase">
+                                <tr>
+                                    <th scope="col" class="py-3">
+                                        Producto
+                                    </th>
+                                    <th scope="col" class="py-3">
+                                        Precio
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Cargar detalle de pedido -->
+                                {% for detalles in venta.detalles %}
+                                <tr class="bg-white">
+                                    <th scope="row" class="py-4 font-medium text-gray-900 whitespace-nowrap">
+                                        {{detalles.descripcion_presentacion}}
+                                    </th>
+                                    <td class="py-4">
+                                        ${{detalles.subtotal_venta}}
+                                    </td>
+                                </tr>
+                                {%endfor%}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Total y botones -->
+                <p class="font-bold text-left pt-3 border-t border-gray-200">Total: ${{venta.total_venta}}</p>
+                <div class="flex justify-between mt-2">
+                    {% if venta.venta_estatus == 'Pendiente' %}
+                    <form action="{{ url_for('pedidos.cancelar', venta_id=venta_id) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="bg-red-400 text-white rounded-lg px-4 py-2">Cancelar</button>
+                    </form>
+                    <form action="{{ url_for('pedidos.atender', venta_id=venta_id) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="bg-yellow-400 text-white px-4 rounded-lg py-2">Atender</button>
+                    </form>
+                    {% endif %}
+                    {% if venta.venta_estatus == 'Listo' %}
+                    <form action="{{ url_for('pedidos.entregar', venta_id=venta_id)}}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="bg-green-500 text-white px-4 rounded-lg py-2">Entregar</button>
+                    </form>
+                    {% endif %}
+                </div>
+
+            </div>
+            {%endfor%}
+        </div>
+    </main>
+</div>
+
+<div class="py-4 px-5">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <!-- Alerta Modal Fija -->
+    <div id="flashMessage" class="fixed inset-0 bg-white-200 bg-opacity-50 flex items-center justify-center z-50"
+        role="alert">
+        <div
+            class="flex items-center p-4 text-sm rounded-lg shadow-lg w-full max-w-sm {{ 'bg-green-200 text-green-600 border-green-400' if 'success' in messages[0][0] else 'bg-yellow-300 text-yellow-800 border-yellow-400' if 'warning' in messages[0][0] else 'bg-red-300 text-red-700 border-red-400' }}">
+            <!-- Icono de mensaje según categoría -->
+            <span class="font-medium">
+                {% for category, message in messages %}
+                {{ message }}
+                {% endfor %}
+            </span>
+            <!-- Botón de cerrar -->
+            <button type="button"
+                class="ml-auto -mx-1.5 -my-1.5 text-green-100 bg-transparent rounded-lg focus:ring-2 p-1.5 inline-flex items-center justify-center h-8 w-8"
+                onclick="closeAlert()">
+                <span class="sr-only">Close</span>
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 14 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                </svg>
+            </button>
+        </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+</div>
+
+<script>
+    function closeAlert() {
+        const alert = document.getElementById('flashMessage');
+        alert.style.display = 'none';
+    }
+</script>
+
+{% endblock%}

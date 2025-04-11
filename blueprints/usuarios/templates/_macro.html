@@ -1,0 +1,14 @@
+{% macro campoNuevo(field) %}
+    <h2 class="font-bold text-gray-800">{{ field.label }}</h2>
+    <dd>
+        {{ field(**kwargs) }} 
+    </dd>
+
+    {% if field.errors %}
+        <ul>
+            {% for error in field.errors %}
+                <li style="color: red;">{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endmacro %}

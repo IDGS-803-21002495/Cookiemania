@@ -1,6 +1,7 @@
 from flask_login import UserMixin
 from models import db
 import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 class Usuario(db.Model, UserMixin):
     __tablename__ = 'usuario'
@@ -19,3 +20,18 @@ class Usuario(db.Model, UserMixin):
 
     def __repr__(self):
         return f'<Usuario {self.username}>'
+    
+    # generar hash de contraseña
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
+    
+    # verificar que la contraseña es correcta
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
+    
+    def __init__(self, nombre, username, email, password, rol):
+        self.nombre = nombre
+        self.username = username
+        self.email = email
+        self.password = generate_password_hash(password)  # Hashear la contraseña
+        self.rol = rol

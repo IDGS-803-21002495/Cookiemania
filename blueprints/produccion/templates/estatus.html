@@ -1,0 +1,205 @@
+{% extends "layout.html" %}
+
+{% block container %}
+
+{% import "_macros.html" as macro %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="fixed top-5 right-5 space-y-4 z-50">
+            {% for category, message in messages %}
+                <div class="relative flex items-center max-w-xs px-6 py-4 rounded-lg shadow-lg text-white
+                    {% if category == 'success' %} bg-green-500 
+                    {% elif category == 'warning' %} bg-yellow-500 
+                    {% elif category == 'danger' or category == 'error' %} bg-red-500 
+                    {% elif category == 'info' %} bg-blue-500 
+                    {% else %} bg-gray-500 {% endif %} 
+                    animate-fadeIn">
+                    <div class="mr-3">
+                        {% if category == 'success' %}
+                        <h1></h1>
+                        {% elif category == 'warning' %}
+                           <h1></h1>
+                        {% elif category == 'danger' or category == 'error' %}
+                            <h1></h1>
+                        {% elif category == 'info' %}
+                            <h1></h1>
+                        {% else %}
+                           <h1></h1>
+                        {% endif %}
+                    </div>
+
+                    <span>{{ message }}</span>
+
+                    <!-- Botón para cerrar el mensaje -->
+                    <button onclick="this.parentElement.classList.add('animate-fadeOut'); setTimeout(() => this.parentElement.remove(), 500);" class="absolute top-2 right-3 text-white text-lg font-bold">
+                        &times;
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% endwith %}
+    
+    <!-- Animaciones -->
+    <style>
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+    
+        .animate-fadeOut {
+            animation: fadeOut 0.5s ease-in-out forwards;
+        }
+    
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+    </style>
+    
+    <div class="p-4 border-dashed rounded-lg dark:border-gray-700">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+            {% for galleta in estatusLote %}
+            <form method="POST" action="{{ url_for('produccion.estatusProduccion') }}" 
+                  class="relative rounded-lg shadow-lg transition-all hover:shadow-xl transform hover:-translate-y-1 max-w-sm
+                  {% if galleta.estado_lote == 'SOLICITADO' %} bg-blue-50 border border-blue-200
+                  {% elif galleta.estado_lote == 'MEZCLANDO' %} bg-purple-50 border border-purple-200
+                  {% elif galleta.estado_lote == 'HORNEANDO' %} bg-orange-50 border border-orange-200
+                  {% elif galleta.estado_lote == 'ENFRIANDO' %} bg-cyan-50 border border-cyan-200
+                  {% else %} bg-gray-50 border border-gray-200 {% endif %}">
+    
+                {{ form.csrf_token }}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="lote_id" value="{{ galleta.id }}">
+    
+                <div class="p-5">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex-1 mr-3">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ galleta.nombre }}</h3>
+                            <div class="space-y-2">
+                                <p class="text-sm">
+                                    <span class="font-medium">Estado:</span> 
+                                    <span class="px-2 py-1 text-xs rounded-full
+                                        {% if galleta.estado_lote == 'SOLICITADO' %} bg-blue-100 text-blue-800
+                                        {% elif galleta.estado_lote == 'MEZCLANDO' %} bg-purple-100 text-purple-800
+                                        {% elif galleta.estado_lote == 'HORNEANDO' %} bg-orange-100 text-orange-800
+                                        {% elif galleta.estado_lote == 'ENFRIANDO' %} bg-cyan-100 text-cyan-800
+                                        {% else %} bg-gray-100 text-gray-800 {% endif %}">
+                                        {{ galleta.estado_lote }}
+                                    </span>
+                                </p>
+                                <p class="text-sm"><span class="font-medium">Cantidad:</span> {{ galleta.cantidad_disponible }}</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            {% if galleta.imagen %}
+                            <img class="rounded-lg w-20 h-20 mb-2" src="{{ url_for('static', filename='uploads/' ~ galleta.imagen) }}" alt="" />
+                            {% endif %}
+                           
+                        </div>
+                    </div>
+    
+                    <!-- Contenedor de botones, solo se muestra si el lote no ha sido procesado -->
+                    {% if galleta.estado_lote not in ['MEZCLANDO', 'HORNEANDO', 'ENFRIANDO', 'TERMINADO', 'CANCELADO'] %}
+                    <div id="botones-{{ galleta.id }}" class="mt-4 flex justify-end gap-3">
+                        <button type="button" class="btn-aceptar inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            onclick="mostrarFormulario('{{ galleta.id }}')">
+                            Aceptar
+                        </button>
+                        <button type="button" class="btn-cancelar inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                            onclick="cancelarFormulario('{{ galleta.id }}')">
+                            Cancelar
+                        </button>
+                    </div>
+                    {% endif %}
+    
+                    <!-- Formulario de actualización -->
+                    <div id="formulario-{{ galleta.id }}" class="mt-4 {% if galleta.estado_lote in ['MEZCLANDO', 'HORNEANDO', 'ENFRIANDO', 'TERMINADO'] %}block{% else %}hidden{% endif %}">
+                        {% if galleta.estado_lote == 'SOLICITADO' %}
+                        <div id="estado-siguiente-{{ galleta.id }}" class="text-sm text-blue-600 font-semibold mb-3">
+                            🔄 Siguiente estado: <span class="font-bold">MEZCLANDO</span>
+                        </div>
+                        <input type="hidden" name="estatus" value="MEZCLANDO">
+                    {% elif galleta.estado_lote == 'MEZCLANDO' %}
+                        <div id="estado-siguiente-{{ galleta.id }}" class="text-sm text-orange-600 font-semibold mb-3">
+                            🔄 Siguiente estado: <span class="font-bold">HORNEANDO</span>
+                        </div>
+                        <input type="hidden" name="estatus" value="HORNEANDO">
+                    {% elif galleta.estado_lote == 'HORNEANDO' %}
+                        <div id="estado-siguiente-{{ galleta.id }}" class="text-sm text-cyan-600 font-semibold mb-3">
+                            🔄 Siguiente estado: <span class="font-bold">ENFRIANDO</span>
+                        </div>
+                        <input type="hidden" name="estatus" value="ENFRIANDO">
+                    {% elif galleta.estado_lote == 'ENFRIANDO' %}
+                        <div id="estado-siguiente-{{ galleta.id }}" class="text-sm text-green-600 font-semibold mb-3">
+                            🔄 Siguiente estado: <span class="font-bold">TERMINADO</span>
+                        </div>
+                        <input type="hidden" name="estatus" value="TERMINADO">
+                    {% endif %}
+                    
+                    <!-- Estado CANCELADO -->
+                    <div id="cancelado-estado-{{ galleta.id }}" class="hidden text-sm text-red-600 font-semibold mb-3">
+                        ❌ Estado seleccionado: <span class="font-bold">CANCELADO</span>
+                    </div>
+                
+                        <div class="mt-4 flex justify-end">
+                            <button type="submit" 
+                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                                    onclick="ocultarBotonesDefinitivamente('{{ galleta.id }}')">
+                                Actualizar Estado
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            {% endfor %}
+        </div>
+    </div>
+
+<!-- Script para manejar la visibilidad -->
+<script>
+    function mostrarFormulario(id) {
+        document.getElementById("formulario-" + id).classList.remove("hidden");
+        document.getElementById("botones-" + id).classList.add("hidden");
+    }
+    
+    function ocultarFormulario(id) {
+        document.getElementById("formulario-" + id).classList.add("hidden");
+        document.getElementById("botones-" + id).classList.remove("hidden");
+    }
+    
+    function ocultarBotonesDefinitivamente(id) {
+        document.getElementById("botones-" + id).style.display = "none";
+    }
+    
+    function cancelarFormulario(id) {
+        // Mostrar el formulario
+        document.getElementById("formulario-" + id).classList.remove("hidden");
+        document.getElementById("botones-" + id).classList.add("hidden");
+    
+        // Ocultar el mensaje del siguiente estado normal
+        const estadoSiguiente = document.getElementById("estado-siguiente-" + id);
+        if (estadoSiguiente) {
+            estadoSiguiente.classList.add("hidden");
+        }
+    
+        // Mostrar el mensaje de CANCELADO
+        const canceladoEstado = document.getElementById("cancelado-estado-" + id);
+        if (canceladoEstado) {
+            canceladoEstado.classList.remove("hidden");
+        }
+    
+        // Cambiar el valor del input oculto
+        const inputHidden = document.querySelector(`#formulario-${id} input[name="estatus"]`);
+        if (inputHidden) {
+            inputHidden.value = "CANCELADO";
+        }
+    }
+</script>
+
+{% endblock %}

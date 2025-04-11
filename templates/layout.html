@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset='utf-8'>
   <meta http-equiv='X-UA-Compatible' content='IE=edge'>
@@ -8,117 +9,293 @@
   <!-- CSS de Flowbite/Tailwind -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
   <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+  <script>
+    // Obtener el ID del usuario actual desde Flask
+    const currentUserId = "{{ current_user.id if current_user.is_authenticated else 'guest' }}";
+    const sessionDuration = 1 * 60 * 60; // 1 hora en segundos
+    let timeLeft;
+  
+    function initializeTimer() {
+      const storedUserId = localStorage.getItem('userId');
+      const storedTime = localStorage.getItem('timeLeft');
+  
+      // Si no hay usuario en localStorage o cambió el usuario, reiniciar el tiempo
+      if (!storedUserId || storedUserId !== currentUserId) {
+        timeLeft = sessionDuration;
+        localStorage.setItem('userId', currentUserId); // guardar nuevo usuario
+        localStorage.setItem('timeLeft', timeLeft);    // reiniciar tiempo
+      } else {
+        // Usuario igual, continuar desde donde se quedó
+        timeLeft = parseInt(storedTime, 10) || sessionDuration;
+      }
+    }
+  
+    function startTimer() {
+      const timerElement = document.getElementById('timer');
+      const interval = setInterval(() => {
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          localStorage.removeItem('timeLeft');
+          localStorage.removeItem('userId');
+          window.location.href = "{{ url_for('auth.login') }}";
+        } else {
+          const minutes = Math.floor(timeLeft / 60);
+          const seconds = timeLeft % 60;
+          timerElement.textContent = `Tiempo restante de sesión: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+          timeLeft--;
+          localStorage.setItem('timeLeft', timeLeft);
+        }
+      }, 1000);
+    }
+  
+    window.onload = function () {
+      initializeTimer();
+      startTimer();
+    };
+  </script>
+  
+
 </head>
-<body class="bg-gray-100">
 
-<!-- NAVBAR (con z-50 para estar sobre el sidebar) -->
-<nav class="bg-blue-700 z-50 relative">
-  <div class="flex items-center justify-between max-w-screen-xl mx-auto p-4">
-    
-    <!-- IZQUIERDA: Botón Toggle + Logo -->
-    <div class="flex items-center space-x-3">
-      <!-- BOTÓN TOGGLE SIDEBAR -->
-      <button id="sidebarToggle"
-              class="inline-flex items-center p-2 w-10 h-10 justify-center text-white
+<body style="background-color:  #eff1f1 ;">
+
+  <!-- NAVBAR (con z-50 para estar sobre el sidebar) -->
+  <nav class="bg-white z-50 relative">
+    <div class="flex items-center justify-between max-w-screen-xl mx-auto p-4">
+      <!-- IZQUIERDA: Botón Toggle + Logo -->
+      <div class="flex items-center space-x-3">
+        <!-- BOTÓN TOGGLE SIDEBAR -->
+        <button id="sidebarToggle" class="inline-flex items-center p-2 w-10 h-10 justify-center text-gray-500
                      rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2
-                     focus:ring-blue-300"
-              type="button">
-        <!-- Ícono hamburguesa -->
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 17 14" xmlns="http://www.w3.org/2000/svg">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M1 1h15M1 7h15M1 13h15"/>
-        </svg>
-      </button>
-      
-      <!-- LOGO + TÍTULO -->
-      <a href="#" class="flex items-center space-x-3">
-        <img src="https://flowbite.com/docs/images/logo.svg" class="h-8" alt="Flowbite Logo" />
-        <span class="self-center text-2xl font-semibold text-white">Cookiemania</span>
-      </a>
-    </div>
-    
-    <!-- DERECHA: Botones Login / Sign up -->
-    <div class="flex items-center space-x-2">
-      <a href="#" class="text-white hover:bg-blue-600 rounded-lg px-4 py-2">Login</a>
-      <a href="#" class="bg-white text-blue-700 hover:bg-gray-100 rounded-lg px-4 py-2">Sign up</a>
-    </div>
-  </div>
-</nav>
+                     focus:ring-blue-300" type="button">
+          <!-- Ícono hamburguesa -->
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 17 14" xmlns="http://www.w3.org/2000/svg">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M1 1h15M1 7h15M1 13h15" />
+          </svg>
+        </button>
 
-<!-- SIDEBAR (z-40, debajo del header) -->
-<aside id="logo-sidebar"
-       class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform
-              -translate-x-full bg-white shadow-xl dark:shadow-gray-700"
-       aria-label="Sidebar">
-  <div class="h-full px-3 pb-4 overflow-y-auto bg-white">
-    <!-- ENCABEZADO DEL SIDEBAR -->
-    <a href="#" class="flex items-center ps-2.5 mb-5">
-      <img src="{{ url_for('static', filename='img/Galletita.png') }}" class="h-14 me-2" alt="Logo" />
-      <span class="self-center text-xl font-semibold whitespace-nowrap text-gray-700">Cookiemania</span>
-    </a>
-    
-    <!-- MENÚ LATERAL -->
-    <ul class="space-y-2 font-medium">
-      <!-- Item: Inicio -->
-      <li>
-        <a href="#"
-           class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
-          <!-- Ícono -->
-          <svg class="w-6 h-6 text-gray-800" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5"/>
-          </svg>
-          <span class="ml-3">Inicio</span>
+        <!-- LOGO + TÍTULO -->
+        <a href="{{ url_for('index') }}" class="flex items-center space-x-3">
+          <img src="../static/img/logo_galleta.png" class="h-12" alt="Logo Cookiemania" />
+          <span class="self-center text-2xl font-semibold text-gray-900">Cookiemania</span>
         </a>
-      </li>
-      <!-- Item: Inventario -->
-      <li>
-        <a href="#"
-           class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
-          <!-- Ícono -->
-          <svg class="w-6 h-6 text-gray-800" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M6 6h8m-8 4h12M6 14h8m-8 4h12"/>
-          </svg>
-          <span class="ml-3">Inventario</span>
-        </a>
-      </li>
-      <!-- Item: Venta -->
-      <li>
-        <a href="#"
-           class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
-          <!-- Ícono -->
-          <svg class="w-6 h-6 text-gray-800" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
-          </svg>
-          <span class="ml-3">Venta</span>
-        </a>
-      </li>
-      <!-- ... Más elementos ... -->
-    </ul>
-  </div>
-</aside>
+      </div>
 
-<!-- CONTENIDO PRINCIPAL -->
-<main class="p-4 md:ml-64">
-  {% block container %}
+
+
+      <!-- DERECHA: Botones Login / Sign up -->
+      <div class="flex items-center space-x-2">
+        {% if current_user.is_authenticated %}
+        <div class="text-gray-500 text-left px-4 text-sm">Bienvenid@ {{current_user.nombre}}
+        </div>
+        {% endif %}
+        <div id="timer" class="text-gray-400 text-left px-4 text-sm">Tiempo restante de sesión: 60:00</div>
+        <!-- Mostar botón para finaizar sesión cuando el usuario esta logueado -->
+        {% if current_user.is_authenticated %}
+        <form action="{{ url_for('auth.logout') }}" method="post" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit"
+            class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 font-semibold">Salir</button>
+        </form>
+        {% endif %}
+        <!-- Iniciar sesión si no se esta logueado -->
+        {% if not current_user.is_authenticated %}
+        <form action="{{ url_for('auth.login') }}" method="get">
+          <button type="submit"
+            class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 font-semibold">
+            Iniciar sesión
+          </button>
+        </form>
+        {% endif %}
+
+      </div>
+    </div>
+  </nav>
+
+  <!-- SIDEBAR (z-40, debajo del header) -->
+  <aside id="logo-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform
+              -translate-x-full bg-white shadow-xl" aria-label="Sidebar">
+    <div class="h-full px-3 pb-4 overflow-y-auto bg-white">
+      <!-- MENÚ LATERAL -->
+      <ul class="space-y-2 font-medium">
+        <!-- Item: Venta -->
+        {% if current_user.rol == 'ADMIN' or current_user.rol == 'VENDEDOR' %}
+        <li>
+          <a href="{{ url_for('venta.index') }}"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+            <!-- Ícono -->
+            <svg class="w-6 h-6 text-gray-800 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+              width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z" />
+            </svg>
+            <span class="ml-3">Venta</span>
+          </a>
+        </li>
+        {% endif %}
+        <!-- Item: Pedidos -->
+        {% if current_user.rol == 'ADMIN' or current_user.rol == 'VENDEDOR' %}
+        <li>
+          <a href="{{ url_for('pedidos.index') }}"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+            <!-- Ícono -->
+            <svg class="w-6 h-6 text-gray-800 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+              width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 10V6a3 3 0 0 1 3-3v0a3 3 0 0 1 3 3v4m3-2 .917 11.923A1 1 0 0 1 17.92 21H6.08a1 1 0 0 1-.997-1.077L6 8h12Z" />
+            </svg>
+            <span class="ml-3">Pedidos</span>
+          </a>
+        </li>
+        {% endif %}
+        <!-- Item: Inventario -->
+        {% if current_user.rol == 'ADMIN' or current_user.rol == 'VENDEDOR' or current_user.rol == 'PRODUCCION' %}
+        <li>
+          <a href="{{ url_for('produccion.produccion') }}"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+            <!-- Ícono -->
+            <svg class="w-6 h-6 text-gray-800 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+              width="22" height="22" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8.65692 9.41494h.01M7.27103 13h.01m7.67737 1.9156h.01M10.9999 17h.01m3.178-10.90671c-.8316.38094-1.8475.22903-2.5322-.45571-.3652-.36522-.5789-.82462-.6409-1.30001-.0574-.44-.0189-.98879.1833-1.39423-1.99351.20001-3.93304 1.06362-5.46025 2.59083-3.51472 3.51472-3.51472 9.21323 0 12.72793 3.51471 3.5147 9.21315 3.5147 12.72795 0 1.5601-1.5602 2.4278-3.5507 2.6028-5.5894-.2108.008-.6725.0223-.8328.0157-.635.0644-1.2926-.1466-1.779-.633-.3566-.3566-.5651-.8051-.6257-1.2692-.0561-.4293.0145-.87193.2117-1.26755-.1159.20735-.2619.40237-.4381.57865-1.0283 1.0282-2.6953 1.0282-3.7235 0-1.0282-1.02824-1.0282-2.69531 0-3.72352.0977-.09777.2013-.18625.3095-.26543" />
+            </svg>
+
+            <span class="ml-3">Inventario</span>
+          </a>
+        </li>
+        {% endif %}
+        <!-- Item: Producción -->
+        {% if current_user.rol == 'ADMIN' or current_user.rol == 'PRODUCCION' %}
+        <li>
+          <a href="{{ url_for('produccion.estatusProduccion') }}"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+            <!-- Ícono -->
+            <svg class="w-6 h-6 text-gray-800 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+              width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 5.365V3m0 2.365a5.338 5.338 0 0 1 5.133 5.368v1.8c0 2.386 1.867 2.982 1.867 4.175 0 .593 0 1.292-.538 1.292H5.538C5 18 5 17.301 5 16.708c0-1.193 1.867-1.789 1.867-4.175v-1.8A5.338 5.338 0 0 1 12 5.365ZM8.733 18c.094.852.306 1.54.944 2.112a3.48 3.48 0 0 0 4.646 0c.638-.572 1.236-1.26 1.33-2.112h-6.92Z" />
+            </svg>
+
+            <span class="ml-3">Producción</span>
+          </a>
+        </li>
+        {% endif %}
+        <!-- Item: Insumos -->
+        {% if current_user.rol == 'ADMIN' or current_user.rol == 'VENDEDOR' or current_user.rol == 'PRODUCCION' %}
+        <li>
+          <a href="{{ url_for('inventario.mostrar_insumos') }}"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+            <!-- Ícono -->
+            <svg class="w-6 h-6 text-gray-800 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+              width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M16 6H8m8 0s3 2.5 3 5m-3-5V3H8v3m0 0s-3 2.5-3 5v8.002C5 20.6589 6.34315 22 8 22h8c1.6569 0 3-1.3411 3-2.998V11m0 0h-8v7h8v-7ZM6 6h12" />
+            </svg>
+
+            <span class="ml-3">Insumos</span>
+          </a>
+        </li>
+        {% endif %}
+        <!-- Item: Recetas -->
+        {% if current_user.rol == 'ADMIN' or current_user.rol == 'PRODUCCION' %}
+        <li>
+          <a href="{{ url_for('recetas.listar_o_crear_recetas') }}"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+            <!-- Ícono -->
+            <svg class="w-6 h-6 text-gray-800 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+              width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10 3v4a1 1 0 0 1-1 1H5m4 8h6m-6-4h6m4-8v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z" />
+            </svg>
+            <span class="ml-3">Recetas</span>
+          </a>
+        </li>
+        {% endif %}
+        {% if current_user.rol == 'CLIENTE' %}
+        <li>
+          <a href="{{ url_for('clientes.misPedidos') }}"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+            <!-- Ícono -->
+            <svg class="w-6 h-6 text-gray-800 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+              width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10 3v4a1 1 0 0 1-1 1H5m4 8h6m-6-4h6m4-8v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z" />
+            </svg>
+            <span class="ml-3">Mis pedidos</span>
+          </a>
+        </li>
+        {% endif %}
+        {% if current_user.rol == 'CLIENTE' %}
+        <li>
+          <a href="{{ url_for('clientes.index') }}"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+            <!-- Ícono -->
+            <svg class="w-6 h-6 text-gray-800 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+              width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z" />
+            </svg>
+            <span class="ml-3">Comprar</span>
+          </a>
+        </li>
+        {% endif %}
+        <!-- Item: Usuarios -->
+        {% if current_user.rol == 'ADMIN' %}
+        <li>
+          <a href="{{ url_for('usuarios.usuarios') }}"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+            <!-- Ícono -->
+            <svg class="w-6 h-6 text-gray-800 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+              width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                d="M4.5 17H4a1 1 0 0 1-1-1 3 3 0 0 1 3-3h1m0-3.05A2.5 2.5 0 1 1 9 5.5M19.5 17h.5a1 1 0 0 0 1-1 3 3 0 0 0-3-3h-1m0-3.05a2.5 2.5 0 1 0-2-4.45m.5 13.5h-7a1 1 0 0 1-1-1 3 3 0 0 1 3-3h3a3 3 0 0 1 3 3 1 1 0 0 1-1 1Zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" />
+            </svg>
+            <span class="ml-3">Usuarios</span>
+          </a>
+        </li>
+        {% endif %}
+        <!-- Item: Proveedores -->
+        {% if current_user.rol == 'ADMIN' %}
+        <li>
+          <a href="{{ url_for('proveedores.lista_proveedores') }}"
+            class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
+            <!-- Ícono -->
+            <svg class="w-6 h-6 text-gray-800 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+              width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 13h3.439a.991.991 0 0 1 .908.6 3.978 3.978 0 0 0 7.306 0 .99.99 0 0 1 .908-.6H20M4 13v6a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-6M4 13l2-9h12l2 9" />
+            </svg>
+            <span class="ml-3">Proveedores</span>
+          </a>
+        </li>
+        {% endif %}
+
+      </ul>
+    </div>
+
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="p-4 md:ml-64">
+    {% block container %}
     <h1 class="text-2xl font-bold">Contenido principal</h1>
-  {% endblock %}
-</main>
+    {% endblock %}
+  </main>
 
-<!-- Flowbite -->
-<script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+  <!-- Flowbite -->
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
 
-<!-- Script para togglear el sidebar -->
-<script>
-  const sidebarToggleBtn = document.getElementById('sidebarToggle');
-  const sidebar = document.getElementById('logo-sidebar');
+  <!-- Script para togglear el sidebar -->
+  <script>
+    const sidebarToggleBtn = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('logo-sidebar');
 
-  sidebarToggleBtn.addEventListener('click', () => {
-    sidebar.classList.toggle('-translate-x-full');
-  });
-</script>
+    sidebarToggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('-translate-x-full');
+    });
+  </script>
 
 </body>
+
 </html>

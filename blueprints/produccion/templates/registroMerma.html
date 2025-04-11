@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+
+{% block container %}
+
+{% import "_macros.html" as macro %}
+<!--Registro merma-->
+<div class="p-4 sm:ml-64">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="fixed top-5 right-5 space-y-4 z-50">
+            {% for category, message in messages %}
+                <div class="relative flex items-center max-w-xs px-6 py-4 rounded-lg shadow-lg text-white
+                    {% if category == 'success' %} bg-green-500 
+                    {% elif category == 'warning' %} bg-yellow-500 
+                    {% elif category == 'danger' or category == 'error' %} bg-red-500 
+                    {% elif category == 'info' %} bg-blue-500 
+                    {% else %} bg-gray-500 {% endif %} 
+                    animate-fadeIn">
+                    
+                    <div class="mr-3">
+                        {% if category == 'success' %}
+                            
+                        <h1></h1>
+                        {% elif category == 'warning' %}
+                           <h1></h1>
+                        {% elif category == 'danger' or category == 'error' %}
+                            <h1></h1>
+                        {% elif category == 'info' %}
+                            <h1></h1>
+                        {% else %}
+                           <h1></h1>
+                        {% endif %}
+                    </div>
+    
+                    <span>{{ message }}</span>
+    
+                    <!-- Botón para cerrar el mensaje -->
+                    <button onclick="this.parentElement.classList.add('animate-fadeOut'); setTimeout(() => this.parentElement.remove(), 500);" class="absolute top-2 right-3 text-white text-lg font-bold">
+                        &times;
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% endwith %}
+    
+    <!-- Animaciones -->
+    <style>
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+    
+        .animate-fadeOut {
+            animation: fadeOut 0.5s ease-in-out forwards;
+        }
+    
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+    </style>
+    
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Registro de Merma</h2>
+        
+        <form class="mt-4 space-y-4" method="POST" action="{{ url_for('produccion.merma') }}" novalidate>
+           
+                        {{form.csrf_token}}
+            <input type="hidden" name="csrf_token" value="{{csrf_token() }}">
+            <div class="mb-4">
+                <label for="lote_id" class="block text-sm font-medium text-gray-700 mb-2">Seleccionar Lote</label>
+                <select name="lote_id" id="lote_id" required
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">-- Seleccione un lote --</option>
+                    {% for lote in lotes %}
+                    <option value="{{ lote.id }}">
+                        {{ lote.nombre_galleta }} - 
+                        Cantidad: {{ lote.cantidad_disponible }} - 
+                        Caduca: {{ lote.fecha_caducidad.strftime('%d/%m/%Y') if lote.fecha_caducidad else 'N/A' }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-4">
+                <label for="cantidad" class="block text-sm font-medium text-gray-700 mb-2">Cantidad de Merma</label>
+                <input type="number" name="cantidad" id="cantidad" min="1" required
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            
+            <div class="mb-4">
+                <label for="motivo" class="block text-sm font-medium text-gray-700 mb-2">Motivo</label>
+                <select name="motivo" id="motivo" required
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">-- Seleccione un motivo --</option>
+                    <option value="CADUCIDAD">Caducidad</option>
+                    <option value="DESPERDICIO">Daño en producto</option>
+                </select>
+            </div>
+            
+            <button type="submit"
+    class="flex items-center px-6 py-3 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg transition-all duration-300 transform hover:scale-105">
+    Registrar Merma
+</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

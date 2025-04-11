@@ -8,5 +8,5 @@ class PresentacionInsumo(db.Model):
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     nombre = db.Column(db.String(100), nullable = False)
     cantidad_base = db.Column(db.Numeric(10,2), nullable = False)
-    unidad_base = db.Column(db.Enum(UnidadBase.MILILITROS, UnidadBase.GRAMOS, UnidadBase.UNIDADES))  
+    unidad_base = db.Column(db.Enum(UnidadBase.LITROS , UnidadBase.KILOGRAMOS, UnidadBase.UNIDADES))  
     insumo_id = db.Column(db.Integer, db.ForeignKey('insumo.id'), nullable = False)
