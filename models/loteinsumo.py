@@ -7,7 +7,7 @@ class LoteInsumo(db.Model):
     precio_unitario = db.Column(db.Numeric(10,2), nullable = False)
     cantidad = db.Column(db.Numeric(10,2), nullable = False)
     cantidad_disponible = db.Column(db.Numeric(10,2), nullable = False)
-    fecha_caducidad = db.Column(db.DateTime, nullable = False)
+    fecha_caducidad = db.Column(db.DateTime, nullable = True)
     compra_id = db.Column(db.Integer, db.ForeignKey('compra.id'), nullable = False)
     insumo_id = db.Column(db.Integer, db.ForeignKey('insumo.id'), nullable = False)
     presentacion_id = db.Column(db.Integer, db.ForeignKey('presentacioninsumo.id'), nullable = False)

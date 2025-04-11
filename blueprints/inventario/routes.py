@@ -5,9 +5,14 @@ from models import db
 from flask import jsonify
 from flask import session
 import datetime
+from sqlalchemy import case
 from models import db, LoteInsumo, Insumo, PresentacionInsumo
 from . import forms
-from decimal import Decimal, InvalidOperation
+from decimal import InvalidOperation
+import datetime
+from datetime import date
+from datetime import datetime, timedelta
+from decimal import Decimal
 from flask import flash
 from flask_login import login_required, current_user
 from flask_wtf.csrf import CSRFProtect
@@ -17,25 +22,49 @@ from models import db, Compra, LoteInsumo, Insumo, PresentacionInsumo, Proveedor
 @login_required 
 def mostrar_insumos():
     print(f"ID del usuario autenticado: {current_user.id}")  
+    hoy = date.today() 
     insumos = (
         db.session.query(
             Insumo.id.label("insumo_id"),
             Insumo.nombre.label("nombre_insumo"),
             db.func.sum(LoteInsumo.cantidad_disponible).label("total_cantidad_disponible"),
-            db.func.min(LoteInsumo.fecha_caducidad).label("fecha_caducidad_proxima"),
+            db.func.min(
+                case(
+                    (LoteInsumo.cantidad_disponible > 0, LoteInsumo.fecha_caducidad)
+                )
+            ).label("fecha_caducidad_proxima"),
             Insumo.unidad_medida.label("unidadMedida")
         )
         .join(Insumo, LoteInsumo.insumo_id == Insumo.id)
         .join(PresentacionInsumo, LoteInsumo.presentacion_id == PresentacionInsumo.id)
-        .filter(LoteInsumo.cantidad_disponible > 0)  # Filtra solo lotes con cantidad disponible
-        .group_by(Insumo.id, PresentacionInsumo.id, LoteInsumo.presentacion_id, PresentacionInsumo.nombre)
+          # Filtra solo lotes con cantidad disponible
+        .group_by(Insumo.id)
         .all()
     ) 
+    lotes = (
+        db.session.query(
+            LoteInsumo.id.label("lote_id"),
+            LoteInsumo.cantidad_disponible,
+            Insumo.nombre.label("nombre_insumo"),
+            Insumo.unidad_medida,
+            LoteInsumo.fecha_caducidad
+        )
+        .join(Insumo, LoteInsumo.insumo_id == Insumo.id)
+        .filter(
+            (LoteInsumo.fecha_caducidad < hoy) | 
+            (LoteInsumo.fecha_caducidad.between(hoy, hoy + timedelta(days=15)))
+        )
+        .filter(LoteInsumo.cantidad_disponible > 0)
+        .all()
+    )
+    
+
     carrito = session.get('carrito', [])
     proveedores = db.session.query(Proveedor).all()
     presentaciones = db.session.query(PresentacionInsumo).all()
+    
 
-    return render_template('inventario.html', insumos=insumos, proveedores=proveedores, presentaciones=presentaciones)
+    return render_template('inventario.html', insumos=insumos, proveedores=proveedores, presentaciones=presentaciones,   lotes=lotes, hoy=hoy)
 
 @inventario_bp.route('/surtir', methods=['GET', 'POST'])
 @login_required
@@ -74,7 +103,6 @@ def surtir_inventario():
         print(f"ID: {presentacion.id}, Nombre: {presentacion.nombre}")
 
     return render_template('inventario.html', insumos=insumos, proveedores=proveedores, presentaciones=presentaciones)
-
 @inventario_bp.route('/agregar_al_carrito', methods=['POST'])
 @login_required
 def agregar_al_carrito():
@@ -82,6 +110,7 @@ def agregar_al_carrito():
     cantidad = request.form['cantidad']
     precio_unitario = request.form['precio_unitario']
     proveedor_id = request.form['proveedor_id']
+    presentacion_id = request.form['presentacion_id']
     fecha_caducidad = request.form['fecha_caducidad']
 
     # Validaciones básicas
@@ -93,7 +122,7 @@ def agregar_al_carrito():
     try:
         cantidad = Decimal(cantidad)
         precio_unitario = Decimal(precio_unitario)
-        fecha_caducidad = datetime.datetime.strptime(fecha_caducidad, '%Y-%m-%d').date()
+        fecha_caducidad = datetime.strptime(fecha_caducidad, '%Y-%m-%d').date()
     except (ValueError, InvalidOperation):
         flash("Error en el formato de los datos.", "danger")
         return redirect(url_for('inventario.mostrar_insumos'))
@@ -105,9 +134,13 @@ def agregar_al_carrito():
         return redirect(url_for('inventario.mostrar_insumos'))
 
     # Obtener la presentación asociada al insumo
-    presentacion = db.session.query(PresentacionInsumo).filter_by(insumo_id=insumo.id).first()
+    if not presentacion_id:
+        flash("Debe seleccionar una presentación.", "danger")
+        return redirect(url_for('inventario.mostrar_insumos'))
+
+    presentacion = db.session.query(PresentacionInsumo).filter_by(id=presentacion_id, insumo_id=insumo.id).first()
     if not presentacion:
-        flash("La presentación del insumo no está disponible", "danger")
+        flash("La presentación seleccionada no es válida", "danger")
         return redirect(url_for('inventario.mostrar_insumos'))
 
     # Calcular cantidad total
@@ -123,13 +156,23 @@ def agregar_al_carrito():
         if item['insumo_id'] == insumo_id:
             item['cantidad'] = str(Decimal(item['cantidad']) + cantidad)
             item['cantidad_disponible'] = str(Decimal(item['cantidad_disponible']) + cantidad_disponible)
-            item['subtotal'] = str(Decimal(item['cantidad']) * precio_unitario)
+
+            # Modificar subtotal si la presentación contiene "gramos"
+            if 'gramos' in presentacion.nombre.lower():
+                item['subtotal'] = str(precio_unitario)
+            else:
+                item['subtotal'] = str(Decimal(item['cantidad']) * precio_unitario)
+
             existe = True
             break
 
     # Si el insumo no está en el carrito, lo agregamos
     if not existe:
-        subtotal = cantidad * precio_unitario
+        if 'gramos' in presentacion.nombre.lower():
+            subtotal = precio_unitario
+        else:
+            subtotal = cantidad * precio_unitario
+
         session['carrito'].append({
             'insumo_id': insumo_id,
             'nombre': insumo.nombre,
@@ -147,9 +190,10 @@ def agregar_al_carrito():
 
     # Calcular total del carrito
     session['total'] = str(sum(Decimal(item['subtotal']) for item in session['carrito']))
-    
 
     return redirect(url_for('inventario.mostrar_insumos'))
+
+
 
 
 
@@ -167,7 +211,7 @@ def realizar_compra():
     lotes_creados = []  # Lista para almacenar los lotes creados
 
     # Crear un nuevo registro de compra
-    nueva_compra = Compra(usuario_id=current_user.id, fecha_compra=datetime.datetime.now().date())
+    nueva_compra = Compra(usuario_id=current_user.id, fecha_compra=datetime.now().date())
     db.session.add(nueva_compra)
     db.session.commit()
 
@@ -182,7 +226,7 @@ def realizar_compra():
             proveedor_id = item.get('proveedor_id')
             presentacion_id = item.get('presentacion_id')
             cantidad_disponible = Decimal(item.get('cantidad_disponible'))
-            fecha_caducidad = datetime.datetime.strptime(item.get('fecha_caducidad'), '%Y-%m-%d').date()
+            fecha_caducidad = datetime.strptime(item.get('fecha_caducidad'), '%Y-%m-%d').date()
 
             # Validar insumo y presentación
             insumo = db.session.query(Insumo).filter_by(id=insumo_id).first()
@@ -222,7 +266,7 @@ def realizar_compra():
     for lote in lotes_creados:
         pago = PagoProveedor(
             proveedor_id=lote.proveedor_id,
-            fecha=datetime.datetime.now().date(),
+            fecha=datetime.now().date(),
             monto=lote.precio_unitario * lote.cantidad,
             lote_insumo_id=lote.id  # Cada pago se asocia a su lote correspondiente
         )
@@ -307,10 +351,8 @@ def agregar_insumo():
         unidad_medida = request.form['unidadMedida']
         presentacion_nombre = request.form['presentacion']
         cantidad_presentacion = Decimal(request.form['cantidad_presentacion'])
-        precio_unitario = Decimal(request.form['precio_unitario'])
-        cantidad_comprada = Decimal(request.form['cantidad_comprada'])
-        fecha_caducidad = datetime.datetime.strptime(request.form['fecha_caducidad_insumo'], "%Y-%m-%d").date()
-        proveedor_id = request.form['proveedor_id']
+        
+      
 
         # Insertar en Insumo
         nuevo_insumo = Insumo(nombre=nombre_insumo, unidad_medida=unidad_medida)
@@ -328,35 +370,32 @@ def agregar_insumo():
         db.session.flush()  # Obtener ID de la presentación recién insertada
 
         # Insertar en Compra
-        nueva_compra = Compra(fecha_compra=datetime.datetime.now(), usuario_id=current_user.id)
+        nueva_compra = Compra(fecha_compra=datetime.now(), usuario_id=current_user.id)
         db.session.add(nueva_compra)
         db.session.flush()  # Obtener ID de la compra recién insertada
 
-        # Calcular cantidad disponible en LoteInsumo
-        cantidad_disponible = cantidad_comprada * cantidad_presentacion
+      
 
         # Insertar en LoteInsumo
         nuevo_lote = LoteInsumo(
-            precio_unitario=precio_unitario,
-            cantidad=cantidad_comprada,
-            cantidad_disponible=cantidad_disponible,
-            fecha_caducidad=fecha_caducidad,
+            precio_unitario=0,
+            cantidad=0,
+            cantidad_disponible=0,
+            fecha_caducidad=None,
             compra_id=nueva_compra.id,
             insumo_id=nuevo_insumo.id,
             presentacion_id=nueva_presentacion.id,
-            proveedor_id=proveedor_id
+            proveedor_id=1
         )
         db.session.add(nuevo_lote)
         db.session.flush() 
 
-        # Calcular monto total de la compra
-        monto_total = cantidad_comprada * precio_unitario
-
+       
         # Insertar en PagoProveedor
         nuevo_pago = PagoProveedor(
-            fecha=datetime.datetime.now(),
-            monto=monto_total,
-            proveedor_id=proveedor_id,
+            fecha=datetime.now(),
+            monto=0,
+            proveedor_id=1,
             lote_insumo_id=nuevo_lote.id
         )
         db.session.add(nuevo_pago)
@@ -371,3 +410,29 @@ def agregar_insumo():
         db.session.rollback()
         flash(f"Error al agregar insumo: {str(e)}", "danger")
         return redirect(url_for('inventario.mostrar_insumos'))
+    
+@inventario_bp.route('/lotes_a_vencer', methods=['GET'])
+@login_required
+def lotes_a_vencer():
+    hoy = datetime.today()  # Usamos datetime para incluir hora y fecha
+
+    lotes = (
+        db.session.query(
+            LoteInsumo.id.label("lote_id"),
+            LoteInsumo.cantidad_disponible,
+            Insumo.nombre.label("nombre_insumo"),
+            Insumo.unidad_medida,
+            LoteInsumo.fecha_caducidad
+        )
+        .join(Insumo, LoteInsumo.insumo_id == Insumo.id)
+        .filter(
+            (LoteInsumo.fecha_caducidad < hoy) | 
+            (LoteInsumo.fecha_caducidad.between(hoy, hoy + timedelta(days=15)))
+        )
+        .filter(LoteInsumo.cantidad_disponible > 0)
+        .all()
+    )
+    
+    print(lotes)  # Esto te ayudará a depurar los lotes
+
+    return render_template('inventario.mostrar_insumos', lotes=lotes, hoy=hoy)
