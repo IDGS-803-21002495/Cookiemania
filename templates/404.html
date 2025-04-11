@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>404 - Página no encontrada</title>
+  <link href="/static/css/tailwind.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden; 
+      background: #fff;
+    }
+    .main-container {
+      width: 100vw;
+      min-height: 100vh; 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative; 
+    }
+    .content-404 {
+      position: relative;
+      z-index: 10;       
+      margin-bottom: 5rem; 
+      text-align: center;  
+    }
+    @keyframes moveSprite {
+      0%   { transform: translateX(-200px); }
+      100% { transform: translateX(100vw); }
+    }
+    .runner-gif {
+      width: 200px;
+      height: auto;
+      position: absolute;
+      bottom: 0; 
+      left: 0;  
+      z-index: 0;          
+      animation: moveSprite 20s linear infinite;
+    }
+  </style>
+</head>
+<body style="background-color: #FFFCF9;">
+  <div class="main-container">
+    <div class="content-404">
+      <img src="/static/img/error404.png" alt="Error 404" class="w-96 mb-4 mx-auto" />
+      <p class="text-xl text-gray-600 mb-4">Ocurrio un error maniaco</p>
+      <a href="/"
+         class="inline-flex items-center justify-center px-6 py-3 text-white bg-yellow-600 
+                hover:bg-yellow-700 rounded-lg shadow-md transition duration-300">
+        Volver al inicio
+      </a>
+    </div>
+    <img src="/static/img/caminatadulce.gif" alt="Animación corriendo" class="runner-gif" />
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+</body>
+</html>

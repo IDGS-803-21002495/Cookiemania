@@ -14,8 +14,8 @@ class UserStatus(Enum):
 
 # Definir ENUM para la unidad base de un insumo 
 class UnidadBase(Enum):
-    GRAMOS = 'GRAMOS'
-    MILILITROS = 'MILILITROS'
+    KILOGRAMOS = 'KILOGRAMOS'
+    LITROS = 'LITROS'
     UNIDADES = 'UNIDADES'
 
 # Definir ENUM para el estado de disponibilidad de una galleta
@@ -36,7 +36,7 @@ class EstadoLote(Enum):
 # Definir ENUM para el estado en que se encuentra una venta 
 class EstadoVenta(Enum):
     PENDIENTE = 'PENDIENTE'
-    PRODUCCION = 'PRODUCCION'
+    LISTO = 'LISTO'
     ENTREGADO = 'ENTREGADO'
     CANCELADO = 'CANCELADO'
 
@@ -44,7 +44,8 @@ class EstadoVenta(Enum):
 class TipoVenta(Enum):
     UNIDAD = 'UNIDAD'
     GRAMAJE = 'GRAMAJE'
-    PAQUETE = 'PAQUETE'
+    PAQUETE1 = 'PAQUETE1'
+    PAQUETE2 = 'PAQUETE2'
 
 # Definir ENUM para el tipo de merma que se registra
 class TipoMerma(Enum):

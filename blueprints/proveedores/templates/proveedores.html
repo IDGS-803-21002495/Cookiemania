@@ -1,22 +1,30 @@
 {%extends "layout.html" %}
 
 {%block container%}
-<div class="p-4 sm:ml-64">
-    <div class="p-4 border-dashed rounded-lg dark:border-gray-700">
-        <h2 class="flex items-center text-3xl font-bold dark:text-gray-600">Proveedores</h2>
-        <p class="mb-5 text-gray-500 dark:text-gray-400">Registro de todos los proveedores</p>
-        <form method="POST" action="/registro" class="w-100 p-6 bg-white rounded-lg shadow-md mb-4">
 
+{% import "_macros.html" as macros %}
+
+    <div class="">
+        <p class="mb-5 text-gray-500 dark:text-gray-400">Registro de todos los proveedores</p>
+        <form method="POST" action="{{ url_for('proveedores.agregar_proveedor') }}" class="w-100 p-6 bg-white rounded-lg shadow-md mb-4" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="flex justify-between items-center mb-4">
                 <div class="flex flex-col w-1/2 pr-2">
                     <div class="col-span-1 mb-2">
-                        <label for="username" class="block text-gray-700 font-medium mb-1">Nombre de proveedor</label>
-                        <input type="text" id="username" name="username" required
-                            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        {{ macros.campoNuevo(form.nombre, class="bg-white border border-gray-200 text-gray-900 rounded-lg
+                focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-300
+                dark:placeholder-gray-500 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500")
+                }}
+                    </div>
+                    <div class="col-span-1 mb-2">
+                        {{ macros.campoNuevo(form.correo, class="bg-white border border-gray-200 text-gray-900 rounded-lg
+                focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-300
+                dark:placeholder-gray-500 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500")
+                }}
                     </div>
                     <div class="text-left">
                         <button type="submit"
-                            class="w-100 bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-200">
+                            class="w-100 text-white font-medium py-2 px-4 rounded-md transition duration-200" style="background-color: #FFB428;" >
                             Registrar
                         </button>
                     </div>
@@ -25,9 +33,16 @@
 
                 <div class="flex flex-col w-1/2 pl-2 ml-2 mb-8">
                     <div class="mb-4">
-                        <label for="username" class="block text-gray-700 font-medium mb-2">Télefono</label>
-                        <input type="text" id="username" name="username" required
-                            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        {{ macros.campoNuevo(form.numero_telefonico, class="bg-white border border-gray-200 text-gray-900 rounded-lg
+                focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-300
+                dark:placeholder-gray-500 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500")
+                }}
+                    </div>
+                    <div class="mb-4">
+                        {{ macros.campoNuevo(form.direccion, class="bg-white border border-gray-200 text-gray-900 rounded-lg
+                focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-300
+                dark:placeholder-gray-500 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500")
+                }}
                     </div>
                 </div>
             </div>
@@ -55,13 +70,25 @@
 
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
             <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-500">
-                <thead class="text-xs text-gray-00 uppercase bg-gray-50 dark:bg-gray-200 dark:text-gray-400">
+                <thead class="text-xs text-gray-00 uppercase bg-gray-200 dark:bg-gray-200 dark:text-gray-400">
                     <tr>
                         <th scope="col" class="px-6 py-3">
                             Nombre proveedor
                         </th>
                         <th scope="col" class="px-6 py-3">
                             Télefono
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Correo
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Dirección
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Fecha de Registro
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Estado
                         </th>
                         <th scope="col" class="px-6 py-3">
                             Editar
@@ -72,18 +99,43 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for proveedor in proveedores %}
                     <tr class="odd:bg-white odd:dark:bg-gray-100 even:bg-gray-50 border-gray-200">
                         <td class="px-6 py-4">
-                            Abarrotes "Tia rosa"
+                            {{proveedor.nombre}}
                         </td>
                         <td class="px-6 py-4">
-                            4771580978
+                            {{proveedor.numero_telefonico}}
                         </td>
                         <td class="px-6 py-4">
-                            <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white-100 bg-white border-yellow-100 
+                            {{proveedor.correo}}
+                        </td>
+                        <td class="px-6 py-4">
+                            {{proveedor.direccion}}
+                        </td>
+                        <td class="px-6 py-4">
+                            {{proveedor.fecha_registro}}
+                        </td>
+                        <td class="px-6 py-4 {{ 'bg-green-200' if proveedor.estado == 'ACTIVO' else 'bg-pink-200' }}">
+                            <button type="button" 
+                                    class=" text-sm font-normal px-4 py-2 {{'text-green-500' if proveedor.estado == 'ACTIVO' else 'text-red-600'}}"
+                                    onclick="abrirModalEstado('{{ proveedor.id }}', '{{ proveedor.estado }}')">
+                                {{ 'Activo' if proveedor.estado == 'ACTIVO' else 'Inactivo' }}
+                            </button>
+                        </td>
+                        
+                        <td class="px-6 py-4">
+                            <button type="button" onclick="abrirModal({
+                                id: '{{ proveedor.id }}',
+                                nombre: '{{ proveedor.nombre }}',
+                                numero_telefonico: '{{ proveedor.numero_telefonico }}',
+                                correo: '{{ proveedor.correo }}',
+                                direccion: '{{ proveedor.direccion }}'
+                            })" 
+                             class="p-2.5 ms-2 text-sm font-medium text-white-100 bg-white border-yellow-100 
                                 rounded-lg hover:bg-yellow-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-yellow-300 
                                 dark:bg-white-100 dark:border-yellow-400 dark:hover:bg-yellow-400 dark:hover:text-white 
-                                dark:focus:ring-yellow-600 transition-colors duration-200">
+                                dark:focus:ring-yellow-600 transition-colors duration-200" style="color:#FFB428"> 
                                 <svg class="w-6 h-6 text-white-500 transition-colors duration-200 group-hover:text-white"
                                     aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                     fill="none" viewBox="0 0 24 24">
@@ -94,10 +146,18 @@
                             </button>
                         </td>
                         <td class="px-6 py-4">
-                            <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white-100 bg-white border-yellow-100 
-                                rounded-lg hover:bg-yellow-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-yellow-300 
-                                dark:bg-white-100 dark:border-yellow-400 dark:hover:bg-yellow-400 dark:hover:text-white 
-                                dark:focus:ring-yellow-600 transition-colors duration-200">
+                            <button 
+                                type="button"
+                                class="p-2.5 ms-2 text-sm font-medium text-white-100 bg-white border-yellow-100 
+                                       rounded-lg hover:bg-yellow-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-yellow-300 
+                                       dark:bg-white-100 dark:border-yellow-400 dark:hover:bg-yellow-400 dark:hover:text-white 
+                                       dark:focus:ring-yellow-600 transition-colors duration-200" style="color:#FFB428"
+                                data-modal-target="popup-modal" 
+                                data-modal-toggle="popup-modal"
+                                data-nombre="{{ proveedor.nombre }}"
+                                data-id="{{proveedor.id}}"
+                                onclick="mostrarModalEliminar(this)"
+                            >
                                 <svg class="w-6 h-6 text-white-500 transition-colors duration-200 group-hover:text-white"
                                     aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                     fill="none" viewBox="0 0 24 24">
@@ -107,46 +167,195 @@
                                 </svg>
                             </button>
                         </td>
+                        
                     </tr>
-                    <tr class="odd:bg-white odd:dark:bg-gray-100 even:bg-gray-50 border-gray-200">
-                        <td class="px-6 py-4">
-                            Tienda San Miguel
-                        </td>
-                        <td class="px-6 py-4">
-                            4774562314
-                        </td>
-                        <td class="px-6 py-4">
-                            <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white-100 bg-white border-yellow-100 
-                                rounded-lg hover:bg-yellow-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-yellow-300 
-                                dark:bg-white-100 dark:border-yellow-400 dark:hover:bg-yellow-400 dark:hover:text-white 
-                                dark:focus:ring-yellow-600 transition-colors duration-200">
-                                <svg class="w-6 h-6 text-white-500 transition-colors duration-200 group-hover:text-white"
-                                    aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z" />
-                                </svg>
-                            </button>
-                        </td>
-                        <td class="px-6 py-4">
-                            <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white-100 bg-white border-yellow-100 
-                                rounded-lg hover:bg-yellow-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-yellow-300 
-                                dark:bg-white-100 dark:border-yellow-400 dark:hover:bg-yellow-400 dark:hover:text-white 
-                                dark:focus:ring-yellow-600 transition-colors duration-200">
-                                <svg class="w-6 h-6 text-white-500 transition-colors duration-200 group-hover:text-white"
-                                    aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z" />
-                                </svg>
-                            </button>
-                        </td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+<div id="modalEditarProveedor" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96 relative">
+        <h2 class="text-2xl font-bold mb-4">Editar Proveedor</h2>
+        <form id="formEditarProveedor" method="POST" action="{{ url_for('proveedores.editar_proveedor') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" id="edit_id" name="id">
+
+            <div class="mb-4">
+                <label class="block text-gray-700">Nombre</label>
+                <input type="text" id="edit_nombre" name="nombre" class="w-full p-2 border rounded">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Número Telefónico</label>
+                <input type="text" id="edit_numero_telefonico" name="numero_telefonico" class="w-full p-2 border rounded">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Correo</label>
+                <input type="email" id="edit_correo" name="correo" class="w-full p-2 border rounded">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Dirección</label>
+                <input type="text" id="edit_direccion" name="direccion" class="w-full p-2 border rounded">
+            </div>
+
+            <div class="flex justify-between">
+                <button type="button" class=" text-white px-4 py-2 rounded" onclick="cerrarModal()" style="background-color: #755330;">Cancelar</button>
+                <button type="submit" class=" text-white px-4 py-2 rounded"  style="background-color: #FFB428;" >Guardar cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+    <div id="popup-modal" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+        <div class="relative p-4 w-full max-w-md max-h-full">
+            <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+                <button type="button" class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="popup-modal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Cerrar</span>
+                </button>
+                <div class="p-4 md:p-5 text-center">
+                    <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
+                    <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                        ¿Seguro que quieres desactivar a <span id="nombreProveedor"></span>?
+                    </h3>
+                    
+                        
+                    <form id="formEliminarProveedor" method="POST" >
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+                            Sí, Eliminar
+                        </button>
+                    </form>
+                    <button data-modal-hide="popup-modal" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">No, cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="modalActualizarEstado" tabindex="-1" class="hidden fixed inset-0 flex items-center justify-center">
+        <div class="relative p-4 w-full max-w-md">
+            <div class="relative bg-white rounded-lg dark:bg-gray-700 border-4 border-solid border-orange-500 shadow-lg">
+                <button type="button" class="absolute top-3 right-3 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" onclick="cerrarModalEstado()">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Cerrar</span>
+                </button>
+                <div class="p-4 md:p-5 text-center">
+                    <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
+                    <h2 class="text-lg font-normal text-gray-500 dark:text-gray-400">¿Desea actualizar el estado del proveedor?</h2>
+                    
+                    <form id="formActualizarEstado" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" id="estado_id" name="id">
+    
+                        <div class="mb-4 flex flex-col items-center">
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" name="estado" value="ACTIVO" id="estado_activo">
+                                <span>Activo</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" name="estado" value="INACTIVO" id="estado_inactivo">
+                                <span>Inactivo</span>
+                            </label>
+                        </div>
+    
+                        <div class="flex justify-center space-x-4">
+                            <form id="formActualizarEstado" method="POST" >
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="text-white bg-blue-500 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+                                    Guardar Cambios
+                                </button>
+                            </form>
+                            <button type="button" class="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700" onclick="cerrarModalEstado()">Cancelar</button>
+                           
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    
+<script>
+    function abrirModal(proveedor) {
+        document.getElementById("edit_id").value = proveedor.id;
+        document.getElementById("edit_nombre").value = proveedor.nombre;
+        document.getElementById("edit_numero_telefonico").value = proveedor.numero_telefonico;
+        document.getElementById("edit_correo").value = proveedor.correo;
+        document.getElementById("edit_direccion").value = proveedor.direccion;
+    
+        const modal = document.getElementById("modalEditarProveedor");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    }
+    
+    function cerrarModal() {
+        const modal = document.getElementById("modalEditarProveedor");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+    function mostrarModalEliminar(button) {
+        let nombre = button.getAttribute("data-nombre");
+        let id = button.getAttribute("data-id");  
+        document.getElementById("nombreProveedor").textContent = nombre;
+        
+        // Asignar la acción del formulario con la ruta correcta
+        let form = document.getElementById("formEliminarProveedor");
+        form.action = `/proveedores/eliminarProveedor/${id}`; // Ruta corregida dinámicamente
+    }
+    function abrirModalEstado(id, estadoActual) {
+        document.getElementById("estado_id").value = id;
+
+        // Seleccionar el estado actual
+        if (estadoActual === "ACTIVO") {
+            document.getElementById("estado_activo").checked = true;
+        } else {
+            document.getElementById("estado_inactivo").checked = true;
+        }
+
+        document.getElementById("modalActualizarEstado").classList.remove("hidden");
+        document.getElementById("modalActualizarEstado").classList.add("flex");
+    }
+
+    function cerrarModalEstado() {
+       const modal = document.getElementById("modalActualizarEstado");
+       
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+    
+
+    document.getElementById("formActualizarEstado").onsubmit = function(event) {
+        event.preventDefault();
+        
+        let id = document.getElementById("estado_id").value;
+        let estado = document.querySelector('input[name="estado"]:checked').value;
+    
+        fetch(`/proveedores/actualizarEstado/${id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({ estado: estado })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();  // Esto recarga la página para reflejar los cambios
+                cerrarModalEstado();  // Cierra el modal después de la actualización exitosa
+            } else {
+                alert("Error al actualizar estado");
+            }
+        });
+    };
+</script>
+
 {%endblock%}

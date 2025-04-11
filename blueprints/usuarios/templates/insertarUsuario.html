@@ -1,0 +1,99 @@
+{% extends "layout.html" %}
+
+{% block container %}
+{% import "_macro.html" as macros %}
+
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="fixed top-5 right-5 space-y-4 z-50">
+                {% for category, message in messages %}
+                    <div class="relative flex items-center max-w-xs px-6 py-4 rounded-lg shadow-lg text-white
+                        {% if category == 'success' %} bg-green-500 
+                        {% elif category == 'warning' %} bg-yellow-500 
+                        {% elif category == 'danger' or category == 'error' %} bg-red-500 
+                        {% elif category == 'info' %} bg-blue-500 
+                        {% else %} bg-gray-500 {% endif %} 
+                        animate-fadeIn">
+                        
+                        <div class="mr-3">
+                            {% if category == 'success' %}
+                            <h1></h1>
+                            {% elif category == 'warning' %}
+                            <h1></h1>
+                            {% elif category == 'danger' or category == 'error' %}
+                            <h1></h1>
+                            {% elif category == 'info' %}
+                            <h1></h1>
+                            {% else %}
+                            <h1></h1>
+                            {% endif %}
+                        </div>
+        
+                        <span>{{ message }}</span>
+        
+                        <button onclick="this.parentElement.classList.add('animate-fadeOut'); setTimeout(() => this.parentElement.remove(), 500);" class="absolute top-2 right-3 text-white text-lg font-bold">
+                            &times;
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+        
+        <div class="p-4 border-dashed rounded-lg dark:border-gray-700">
+            <h2 class="flex items-center text-3xl font-bold dark:text-gray-600">Usuarios</h2>
+            <p class="mb-10 text-gray-500 dark:text-gray-400">Registro de todos los usuarios</p>
+            
+            <form method="POST" action="{{ url_for('usuarios.registros') }}" class="w-full p-6 bg-white rounded-lg shadow-md mb-4" novalidate>
+                {{ form.csrf_token }}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="flex flex-col md:flex-row justify-between mb-4">
+                    <!-- Columna izquierda -->
+                    <div class="flex flex-col w-full md:w-1/2 pr-0 md:pr-4">
+                        <div class="col-span-1 mb-4">
+                            {{ macros.campoNuevo(form.nombre, class="bg-white border border-gray-200 text-gray-900 rounded-lg
+                            focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-300
+                            dark:placeholder-gray-500 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500") }}
+                        </div>
+                        
+                        <div class="col-span-1 mb-4">
+                            {{ macros.campoNuevo(form.rol, class="bg-white border border-gray-200 text-gray-900 rounded-lg
+                            focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-300
+                            dark:placeholder-gray-500 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500") }}
+                        </div>
+                        
+                        <div class="col-span-1 mb-4">
+                            {{ macros.campoNuevo(form.email, class="bg-white border border-gray-200 text-gray-900 rounded-lg
+                            focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-300
+                            dark:placeholder-gray-500 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500") }}
+                        </div>
+                    </div>
+    
+                    <!-- Columna derecha -->
+                    <div class="flex flex-col w-full md:w-1/2 pl-0 md:pl-4">
+                        <div class="col-span-1 mb-4">
+                            {{ macros.campoNuevo(form.username, class="bg-white border border-gray-200 text-gray-900 rounded-lg
+                            focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-300
+                            dark:placeholder-gray-500 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500") }}
+                        </div>
+                        
+                        <div class="col-span-1 mb-4">
+                            {{ macros.campoNuevo(form.password, class="bg-white border border-gray-200 text-gray-900 rounded-lg
+                            focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-300
+                            dark:placeholder-gray-500 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500") }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botón centrado debajo de las dos columnas -->
+                <div class="flex justify-center mt-6">
+                    <button type="submit" class="px-6 py-2 text-base bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300 transition-colors">
+                        Registrarse
+                    </button>
+                </div>
+            </form>
+        </div>
+  
+{% endblock %}

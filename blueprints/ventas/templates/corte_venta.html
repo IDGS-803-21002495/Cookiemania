@@ -1,0 +1,210 @@
+{% extends "layout.html" %}
+
+{% block container %}
+{% import "_macros.html" as macros %}
+<div class="px-6">
+    <div>
+        <p class="font-bold text-xl">Corte de venta del día</p>
+    </div>
+    <div>
+        <div class="grid grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-lg">
+                <p class="text-gray-500 text-sm">Total esperado en caja</p>
+                <p class="text-gray-700 text-base font-semibold pt-2">${{total_esperado}}</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg">
+                <p class="text-gray-500 text-sm">Total neto</p>
+                <p class="text-gray-700 text-base font-semibold pt-2">$0000.000</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg">
+                <p class="text-gray-500 text-sm">Diferencia</p>
+                <p class="text-gray-700 text-base font-semibold pt-2">$0000.000</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg">
+                <p class="text-gray-500 text-sm">Ganancia</p>
+                <p class="text-gray-700 text-base font-semibold pt-2">%0000.000</p>
+            </div>
+        </div>
+
+    </div>
+    <div class="pt-6 overflow-y-auto max-h-24 mt-2">
+        <p class="text-base text-gray-600">Detalle de productos vendidos</p>
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-500">
+            <thead class="text-xs text-gray-00 uppercase bg-gray-200 dark:bg-gray-200 dark:text-gray-400">
+                <tr>
+                    <th scope="col" class="px-6 py-3">
+                        Hora
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Producto
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Cantidad
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Total
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venta in ventas %}
+                <tr class="odd:bg-white odd:dark:bg-gray-100 even:bg-gray-50 border-gray-200">
+                    <td class="px-6 py-4">
+                        {{venta.fecha_hora}}
+                    </td>
+                    <td class="px-6 py-4">
+                        {{venta.producto}}
+                    </td>
+                    <td class="px-6 py-4">
+                        {{venta.cantidad}}
+                    </td>
+                    <td class="px-6 py-4">
+                        ${{venta.subtotal}}
+                    </td>
+                </tr>
+                {%endfor%}
+            </tbody>
+            <tfoot>
+                <tr class="font-semibold text-gray-900">
+                    <th scope="row" class="px-6 py-3 text-base" colspan="3">Total</th>
+                    <td class="px-6 py-3 text-right">21,000</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="pt-6">
+        <p class="text-base text-gray-600">Salidas de efectivo</p>
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-500">
+            <thead class="text-xs text-gray-00 uppercase bg-gray-200 dark:bg-gray-200 dark:text-gray-400">
+                <tr>
+                    <th scope="col" class="px-6 py-3">
+                        Fecha
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Motivo
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Cantidad
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Monto
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for egreso in egresos %}
+                <tr class="odd:bg-white odd:dark:bg-gray-100 even:bg-gray-50 border-gray-200">
+                    <td class="px-6 py-4">
+                        {{egreso.fecha}}
+                    </td>
+                    <td class="px-6 py-4">
+                        {{egreso.motivo}}
+                    </td>
+                    <td class="px-6 py-4">
+                        {{egreso.cantidad}}
+                    </td>
+                    <td class="px-6 py-4">
+                        ${{egreso.total}}
+                    </td>
+                </tr>
+                {%endfor%}
+            </tbody>
+            <tfoot>
+                <tr class="font-semibold text-gray-900">
+                    <th scope="row" class="px-6 py-3 text-base" colspan="3">Total</th>
+                    <td class="px-6 py-3 text-right">21,000</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="pt-6">
+        <p class="text-base text-gray-600">Mermas registradas</p>
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-500">
+            <thead class="text-xs text-gray-00 uppercase bg-gray-200 dark:bg-gray-200 dark:text-gray-400">
+                <tr>
+                    <th scope="col" class="px-6 py-3">
+                        Hora
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Producto
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Cantidad
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Total
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for merma in mermas %}
+                <tr class="odd:bg-white odd:dark:bg-gray-100 even:bg-gray-50 border-gray-200">
+                    <td class="px-6 py-4">
+                        {{merma.hora}}
+                    </td>
+                    <td class="px-6 py-4">
+                        {{merma.producto}}
+                    </td>
+                    <td class="px-6 py-4">
+                        {{merma.cantidad}}
+                    </td>
+                    <td class="px-6 py-4">
+                        {{merma.total}}
+                    </td>
+                </tr>
+                {%endfor%}
+            </tbody>
+            <tfoot>
+                <tr class="font-semibold text-gray-900">
+                    <th scope="row" class="px-6 py-3 text-base" colspan="3">Total</th>
+                    <td class="px-6 py-3 text-right">21,000</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div>
+        <div class="flex items-center">
+            <input checked id="checked-checkbox" type="checkbox" value=""
+                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2">
+            <label for="checked-checkbox" class="ms-2 text-sm font-medium text-gray-900">Añadir monto inicial del
+                proximo día</label>
+        </div>
+
+        <div id="montoContainer" class="mt-4">
+            <label for="monto" class="block text-gray-700">Monto inicial:</label>
+            <input type="text" id="monto" name="monto" class="px-4 py-2 border rounded-md" disabled>
+        </div>
+
+        <div class="w-48 pt-3">
+            <form
+                <button class="focus:outline-none text-white bg-yellow-500 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:focus:ring-yellow-900">
+                    Finalizar corte 
+                </button>
+            </form>
+        </div>
+
+        <script>
+            const checkbox = document.getElementById('checked-checkbox');
+            const montoContainer = document.getElementById('montoContainer');
+            const montoInput = document.getElementById('monto');
+
+            // Función para mostrar u ocultar el campo de monto
+            function toggleMonto() {
+                if (checkbox.checked) {
+                    montoContainer.style.display = 'block'; // Muestra el contenedor
+                    montoInput.disabled = false; // Habilita el campo de entrada
+                } else {
+                    montoContainer.style.display = 'none'; // Oculta el contenedor
+                    montoInput.disabled = true; // Deshabilita el campo de entrada
+                }
+            }
+
+            // Llama a la función al cargar la página para establecer el estado inicial
+            toggleMonto();
+
+            // Escucha el evento de cambio en el checkbox
+            checkbox.addEventListener('change', toggleMonto);
+        </script>
+    </div>
+</div>
+{% endblock %}
