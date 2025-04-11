@@ -62,7 +62,7 @@ def solicitar():
 # Manejo de estatus
 @produccion_bp.route('/estatusProduccion', methods=["GET", "POST"])
 @login_required
-@require_role(['PRODUCCION'])
+@require_role(['PRODUCCION', 'ADMIN'])
 def estatusProduccion():
     form = estatusForm(request.form)
     estatusLote = estatusGalleta()
