@@ -42,7 +42,7 @@ def asignar_relaciones(recetas):
             # Vincular el insumo
             d.insumo = Insumo.query.get(d.insumo_id)
             
-            # Tomar el último lote de ese insumo (o el que definas como preferido)
+            # Tomar el último lote de ese insumo 
             lote_insumo = (LoteInsumo.query
                            .filter_by(insumo_id=d.insumo_id)
                            .order_by(LoteInsumo.id.desc())
@@ -146,7 +146,7 @@ def listar_o_crear_recetas():
             )
             db.session.add(nuevo_detalle)
 
-            # Buscar el último lote de ese insumo (o el que definas como adecuado)
+            # Buscar el último lote de ese insumo 
             lote_insumo = LoteInsumo.query \
                                     .filter_by(insumo_id=d_form.insumo_id.data) \
                                     .order_by(LoteInsumo.id.desc()) \
@@ -269,7 +269,7 @@ def editar_receta(receta_id):
             )
             db.session.add(nuevo_detalle)
 
-            # Tomar el lote de insumo más reciente (o la lógica que prefieras)
+            # Tomar el lote de insumo más reciente 
             lote_insumo = (LoteInsumo.query
                            .filter_by(insumo_id=d_form.insumo_id.data)
                            .order_by(LoteInsumo.id.desc())
