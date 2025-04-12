@@ -1,14 +1,16 @@
 from flask import flash, render_template, redirect, request, url_for, session
 from flask_login import login_required, current_user
-from models import db, LoteProduccion, Receta, Galleta, Venta, PagoProveedor, Insumo, LoteInsumo, PresentacionInsumo, MermaInsumo, MermaProducto
+from models import db, LoteProduccion, Receta, Galleta, Venta, DetalleVenta, CorteVenta, PagoProveedor, Insumo, LoteInsumo, PresentacionInsumo, MermaInsumo, MermaProducto, DetalleReceta
 from . import ventas_bp
 from roles import require_role
 import logging
-from .forms import SelectProduct
-from datetime import datetime
-from sqlalchemy import desc, func, select
-from models import db, Venta, DetalleVenta, LoteProduccion
+from .forms import SelectProduct, CorteForm
+from datetime import datetime, date
+from sqlalchemy import desc, func
 from models.enums import EstadoVenta
+from decimal import Decimal
+
+
 
 # Configuración de logs 
 logging.basicConfig(
@@ -353,7 +355,7 @@ def add_venta():
 
 # Función para obtener todas las salidas de efectivo 
 def obtener_salidas_efectivo_proveedores():
-    hoy = datetime.today().date()
+    hoy = datetime.today().date()    
 
     pagos = (
         db.session.query(
@@ -367,6 +369,7 @@ def obtener_salidas_efectivo_proveedores():
         .join(Insumo, LoteInsumo.insumo_id == Insumo.id)
         .join(PresentacionInsumo, LoteInsumo.presentacion_id == PresentacionInsumo.id)
         .filter(func.date(PagoProveedor.fecha) == hoy)
+        .filter(LoteInsumo.cantidad > 0)
         .all()
     )
 
@@ -389,8 +392,9 @@ def obtener_merma_insumo():
     mermas = (
         db.session.query(
             MermaInsumo.fecha,
-            Insumo.nombre.label('insumo'),
-            MermaInsumo.cantidad_merma
+            MermaInsumo.insumo_id,
+            MermaInsumo.cantidad_merma,
+            Insumo.nombre.label('insumo')
         )
         .join(Insumo, MermaInsumo.insumo_id == Insumo.id)
         .filter(func.date(MermaInsumo.fecha) == hoy)
@@ -399,24 +403,35 @@ def obtener_merma_insumo():
 
     resultados = []
     for merma in mermas:
-        # Obtener último lote para precio estimado
+        # Obtener el último lote de ese insumo
         ultimo_lote = (
-            db.session.query(LoteInsumo.precio_unitario)
+            db.session.query(LoteInsumo)
             .filter(LoteInsumo.insumo_id == merma.insumo_id)
             .order_by(desc(LoteInsumo.id))
             .first()
         )
-        precio_unitario = float(ultimo_lote.precio_unitario) if ultimo_lote else 0
-        total_perdido = float(merma.cantidad_merma) * precio_unitario
+
+        if not ultimo_lote:
+            precio_por_unidad_base = 0
+        else:
+            # Obtener datos de la presentación del lote
+            presentacion = db.session.query(PresentacionInsumo).get(ultimo_lote.presentacion_id)
+            if presentacion and presentacion.cantidad_base != 0:
+                precio_por_unidad_base = float(ultimo_lote.precio_unitario) / float(presentacion.cantidad_base)
+            else:
+                precio_por_unidad_base = 0
+
+        total_perdido = float(merma.cantidad_merma) * precio_por_unidad_base
 
         resultados.append({
             'hora': merma.fecha.strftime('%H:%M:%S'),
-            'producto_insumo': merma.insumo,
+            'producto': merma.insumo,
             'cantidad': float(merma.cantidad_merma),
-            'total_perdido': round(total_perdido, 2)
+            'total': round(total_perdido, 2)
         })
 
     return resultados
+
     
 # Función para obtener todas las ventas hechas en el dia
 def obtener_detalles_ventas_hoy():
@@ -460,12 +475,170 @@ def obtener_detalles_ventas_hoy():
 
     return resultados
     
+from sqlalchemy import func
+from datetime import date
+
+def obtener_costos_y_mermas_por_galleta():
+    recetas = Receta.query.all()
+    resultados = []
+    hoy = date.today()  # <-- Fecha actual
+
+    for r in recetas:
+        galleta = Galleta.query.get(r.galleta_id)
+        if not galleta:
+            continue
+
+        detalles = DetalleReceta.query.filter_by(receta_id=r.id).all()
+        total_cost_insumos = 0.0
+
+        for d in detalles:
+            d.insumo = Insumo.query.get(d.insumo_id)
+            lote_insumo = (
+                LoteInsumo.query
+                .filter_by(insumo_id=d.insumo_id)
+                .order_by(LoteInsumo.id.desc())
+                .first()
+            )
+            if lote_insumo:
+                presentacion = PresentacionInsumo.query.get(lote_insumo.presentacion_id)
+                if presentacion and presentacion.cantidad_base:
+                    cost_unit_base = float(lote_insumo.precio_unitario) / float(presentacion.cantidad_base)
+                    cost_insumo = cost_unit_base * float(d.cantidad_insumo)
+                else:
+                    cost_insumo = float(lote_insumo.precio_unitario) * float(d.cantidad_insumo)
+
+                total_cost_insumos += cost_insumo
+
+        if r.cantidad_lote and float(r.cantidad_lote) > 0:
+            costo_unitario = total_cost_insumos / float(r.cantidad_lote)
+        else:
+            costo_unitario = 0.0
+
+        lotes_produccion = LoteProduccion.query.filter_by(receta_id=r.id).all()
+        total_merma_unidades = 0
+
+        for lote in lotes_produccion:
+            mermas = MermaProducto.query.filter(
+                MermaProducto.lote_produccion_id == lote.id,
+                func.date(MermaProducto.fecha) == hoy
+            ).all()
+            for m in mermas:
+                total_merma_unidades += m.cantidad_merma
+
+        costo_total_perdido = total_merma_unidades * costo_unitario
+
+        resultados.append({
+            'producto': galleta.nombre,
+            'costo_unitario': round(costo_unitario, 2),
+            'cantidad': total_merma_unidades,
+            'total': round(costo_total_perdido, 2)
+        })
+
+    return resultados
+
+@ventas_bp.route('ver_cortes', methods = ['GET'])
+@login_required
+@require_role(['ADMIN'])
+def ver_cortes():
+    cortes = CorteVenta.query.order_by(CorteVenta.fecha_corte.desc()).all()
+    return render_template('ver_cortes.html', cortes = cortes)
+
 
 @ventas_bp.route('/corte_venta', methods = ['GET', 'POST'])
+@login_required
+@require_role(['ADMIN'])
 def corte_venta():
     egresos = obtener_salidas_efectivo_proveedores()
     ventas = obtener_detalles_ventas_hoy()
+    mermas = obtener_merma_insumo()
+    mermas_pro = obtener_costos_y_mermas_por_galleta()
     total_ventas = sum(float(item['subtotal']) for item in ventas)
     total_egresos = sum(float(item['total']) for item in egresos)
     total_esperado = (float(total_ventas) - (float(total_egresos)))
-    return render_template('corte_venta.html', ventas = ventas, egresos = egresos, total_esperado = total_esperado)
+    total_mermas_insumos = sum(float(item['total']) for item in mermas)
+    total_mermas_pro = sum(float(item['total']) for item in mermas_pro)
+
+    # Obtener el último corte (si existe)
+    ultimo_corte = CorteVenta.query.order_by(CorteVenta.fecha_corte.desc()).first()
+
+    # Obtener monto_inicial del corte anterior, si no hay, usar 0
+    monto_anterior = ultimo_corte.total_caja if ultimo_corte and ultimo_corte.total_caja else 0
+
+    # Convertir los float a Decimal antes de operar
+    total_neto = round(Decimal(total_ventas) + Decimal(monto_anterior) + Decimal(total_mermas_insumos) + Decimal(total_mermas_pro) - (Decimal(total_egresos)),2)
+    # Formulario
+    form = CorteForm()
+
+    return render_template('corte_venta.html', ventas = ventas, egresos = egresos, total_ventas = total_ventas, total_egresos = total_egresos, total_esperado = total_esperado, mermas = mermas, total_mermas_insumos = total_mermas_insumos, mermas_pro = mermas_pro, total_mermas_pro = total_mermas_pro, total_neto = total_neto, form = form)
+
+@ventas_bp.route('/registrar_corte', methods=['POST'])
+@login_required
+@require_role(['ADMIN'])
+def registrar_corte():
+    form = CorteForm()
+    if form.validate_on_submit():
+        # Validar que no se haya hecho un corte hoy
+        hoy = date.today()
+        corte_existente = CorteVenta.query.filter(
+            db.func.date(CorteVenta.fecha_corte) == hoy,
+            CorteVenta.usuario_id == current_user.id
+        ).first()
+
+        if corte_existente:
+            flash("Ya se ha registrado un corte de venta para el día de hoy.", "warning")
+            return redirect(url_for('venta.ver_cortes'))
+
+
+        monto = form.monto_inicial.data or 0.0
+        total_real = form.total_caja.data or 0.0
+
+        # Vuelve a calcular para mantener consistencia
+        egresos = obtener_salidas_efectivo_proveedores()
+        ventas = obtener_detalles_ventas_hoy()
+        mermas = obtener_merma_insumo()
+        mermas_pro = obtener_costos_y_mermas_por_galleta()
+
+        total_ventas = sum(float(item['subtotal']) for item in ventas)
+        total_egresos = sum(float(item['total']) for item in egresos)
+        total_mermas_insumos = sum(float(item['total']) for item in mermas)
+        total_mermas_pro = sum(float(item['total']) for item in mermas_pro)
+
+        # Convertir a Decimal
+        total_ventas_d = Decimal(total_ventas)
+        total_egresos_d = Decimal(total_egresos)
+        total_mermas_insumos_d = Decimal(total_mermas_insumos)
+        total_mermas_pro_d = Decimal(total_mermas_pro)
+        monto_d = Decimal(monto)
+        total_real_d = Decimal(total_real)
+
+        # Obtener corte anterior
+        ultimo_corte = CorteVenta.query.order_by(CorteVenta.fecha_corte.desc()).first()
+        monto_anterior = Decimal(ultimo_corte.total_caja) if ultimo_corte and ultimo_corte.total_caja else Decimal('0.00')
+
+        # Calcular total neto esperado (basado en monto anterior)
+        total_neto = total_ventas_d + monto_anterior + total_mermas_insumos_d + total_mermas_pro_d - (total_egresos_d)
+
+        # Calcular diferencia entre lo que debería haber (neto esperado) y lo que hay realmente
+        diferencia = total_real_d - total_neto
+
+
+        corte = CorteVenta(
+            total_ventas=total_ventas,
+            total_egresos=total_egresos,
+            total_mermas_insumos=total_mermas_insumos,
+            total_mermas_productos=total_mermas_pro,
+            total_neto=total_neto,
+            monto_inicial=monto,
+            total_caja=total_real,
+            diferencia=diferencia,
+            usuario_id=current_user.id
+        )
+
+        db.session.add(corte)
+        db.session.commit()
+
+        flash("Corte de venta registrado con éxito.", "success")
+        return redirect(url_for('venta.corte_venta'))
+
+    flash("Error en el formulario. Verifica los campos.", "danger")
+    return redirect(url_for('venta.corte_venta'))

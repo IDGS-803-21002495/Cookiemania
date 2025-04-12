@@ -18,3 +18,4 @@ from models.proveedor import Proveedor
 from models.receta import Receta
 from models.usuario import Usuario
 from models.venta import Venta
+from models.corteventa import CorteVenta

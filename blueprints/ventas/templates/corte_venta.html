@@ -2,39 +2,25 @@
 
 {% block container %}
 {% import "_macros.html" as macros %}
-<div class="px-6">
-    <div>
-        <p class="font-bold text-xl">Corte de venta del día</p>
-    </div>
-    <div>
+<div class="p-6 bg-white rounded-lg">
+    <div class="pt-4">
         <div class="grid grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-lg">
-                <p class="text-gray-500 text-sm">Total esperado en caja</p>
-                <p class="text-gray-700 text-base font-semibold pt-2">${{total_esperado}}</p>
+            <div class="bg-gray-100 p-4 rounded-lg">
+                <p class="text-gray-900 text-sm font-semibold">Total esperado en caja</p>
+                <p class="text-gray-700 text-2xl font-semibold pt-2">${{total_esperado}}</p>
             </div>
-            <div class="bg-white p-4 rounded-lg">
-                <p class="text-gray-500 text-sm">Total neto</p>
-                <p class="text-gray-700 text-base font-semibold pt-2">$0000.000</p>
-            </div>
-            <div class="bg-white p-4 rounded-lg">
-                <p class="text-gray-500 text-sm">Diferencia</p>
-                <p class="text-gray-700 text-base font-semibold pt-2">$0000.000</p>
-            </div>
-            <div class="bg-white p-4 rounded-lg">
-                <p class="text-gray-500 text-sm">Ganancia</p>
-                <p class="text-gray-700 text-base font-semibold pt-2">%0000.000</p>
+            <div class="bg-gray-100 p-4 rounded-lg">
+                <p class="text-gray-900 text-sm font-semibold">Total neto</p>
+                <p class="text-gray-700 text-2xl font-semibold pt-2">${{total_neto}}</p>
             </div>
         </div>
 
     </div>
     <div class="pt-6 overflow-y-auto max-h-24 mt-2">
-        <p class="text-base text-gray-600">Detalle de productos vendidos</p>
-        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-500">
-            <thead class="text-xs text-gray-00 uppercase bg-gray-200 dark:bg-gray-200 dark:text-gray-400">
+        <p class="text-xl text-gray-600 font-semibold">Productos vendidos</p>
+        <table class="w-full text-sm text-left rtl:text-right ">
+            <thead class="text-xs text-gray-00 uppercase bg-gray-200">
                 <tr>
-                    <th scope="col" class="px-6 py-3">
-                        Hora
-                    </th>
                     <th scope="col" class="px-6 py-3">
                         Producto
                     </th>
@@ -48,10 +34,7 @@
             </thead>
             <tbody>
                 {% for venta in ventas %}
-                <tr class="odd:bg-white odd:dark:bg-gray-100 even:bg-gray-50 border-gray-200">
-                    <td class="px-6 py-4">
-                        {{venta.fecha_hora}}
-                    </td>
+                <tr class="odd:bg-white even:bg-gray-50 border-gray-300">
                     <td class="px-6 py-4">
                         {{venta.producto}}
                     </td>
@@ -66,20 +49,17 @@
             </tbody>
             <tfoot>
                 <tr class="font-semibold text-gray-900">
-                    <th scope="row" class="px-6 py-3 text-base" colspan="3">Total</th>
-                    <td class="px-6 py-3 text-right">21,000</td>
+                    <th scope="row" class="px-6 py-3 text-base" colspan="2">Total</th>
+                    <td class="px-6 py-3 text-right text-base">${{total_ventas}}</td>
                 </tr>
             </tfoot>
         </table>
     </div>
     <div class="pt-6">
-        <p class="text-base text-gray-600">Salidas de efectivo</p>
-        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-500">
-            <thead class="text-xs text-gray-00 uppercase bg-gray-200 dark:bg-gray-200 dark:text-gray-400">
+        <p class="text-xl text-gray-600 font-semibold">Salidas de efectivo</p>
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+            <thead class="text-xs text-gray-00 uppercase bg-gray-200">
                 <tr>
-                    <th scope="col" class="px-6 py-3">
-                        Fecha
-                    </th>
                     <th scope="col" class="px-6 py-3">
                         Motivo
                     </th>
@@ -93,10 +73,7 @@
             </thead>
             <tbody>
                 {% for egreso in egresos %}
-                <tr class="odd:bg-white odd:dark:bg-gray-100 even:bg-gray-50 border-gray-200">
-                    <td class="px-6 py-4">
-                        {{egreso.fecha}}
-                    </td>
+                <tr class="odd:bg-white  even:bg-gray-50 border-gray-200">
                     <td class="px-6 py-4">
                         {{egreso.motivo}}
                     </td>
@@ -111,20 +88,56 @@
             </tbody>
             <tfoot>
                 <tr class="font-semibold text-gray-900">
-                    <th scope="row" class="px-6 py-3 text-base" colspan="3">Total</th>
-                    <td class="px-6 py-3 text-right">21,000</td>
+                    <th scope="row" class="px-6 py-3 text-base" colspan="2">Total</th>
+                    <td class="px-6 py-3 text-right text-base">${{total_egresos}}</td>
                 </tr>
             </tfoot>
         </table>
     </div>
     <div class="pt-6">
-        <p class="text-base text-gray-600">Mermas registradas</p>
-        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-500">
-            <thead class="text-xs text-gray-00 uppercase bg-gray-200 dark:bg-gray-200 dark:text-gray-400">
+        <p class="text-xl text-gray-600 font-semibold">Mermas de productos registradas</p>
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+            <thead class="text-xs text-gray-00 uppercase bg-gray-200">
                 <tr>
                     <th scope="col" class="px-6 py-3">
-                        Hora
+                        Producto
                     </th>
+                    <th scope="col" class="px-6 py-3">
+                        Cantidad
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Total
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for merma_pro in mermas_pro%}
+                <tr class="odd:bg-white even:bg-gray-50 border-gray-200">
+                    <td class="px-6 py-4">
+                        {{merma_pro.producto}}
+                    </td>
+                    <td class="px-6 py-4">
+                        {{merma_pro.cantidad}}
+                    </td>
+                    <td class="px-6 py-4">
+                        {{merma_pro.total}}
+                    </td>
+                </tr>
+                {%endfor%}
+            </tbody>
+            <tfoot>
+                <tr class="font-semibold text-gray-900">
+                    <th scope="row" class="px-6 py-3 text-base" colspan="2">Total</th>
+                    <td class="px-6 py-3 text-right text-base">${{total_mermas_pro}}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="pt-6">
+        <p class="text-xl text-gray-600 font-semibold">Mermas de insumos registradas</p>
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+            <thead class="text-xs text-gray-00 uppercase bg-gray-200">
+                <tr>
                     <th scope="col" class="px-6 py-3">
                         Producto
                     </th>
@@ -138,10 +151,7 @@
             </thead>
             <tbody>
                 {% for merma in mermas %}
-                <tr class="odd:bg-white odd:dark:bg-gray-100 even:bg-gray-50 border-gray-200">
-                    <td class="px-6 py-4">
-                        {{merma.hora}}
-                    </td>
+                <tr class="odd:bg-white even:bg-gray-50 border-gray-200">
                     <td class="px-6 py-4">
                         {{merma.producto}}
                     </td>
@@ -156,32 +166,45 @@
             </tbody>
             <tfoot>
                 <tr class="font-semibold text-gray-900">
-                    <th scope="row" class="px-6 py-3 text-base" colspan="3">Total</th>
-                    <td class="px-6 py-3 text-right">21,000</td>
+                    <th scope="row" class="px-6 py-3 text-base" colspan="2">Total</th>
+                    <td class="px-6 py-3 text-right text-base">${{total_mermas_insumos}}</td>
                 </tr>
             </tfoot>
         </table>
     </div>
     <div>
-        <div class="flex items-center">
+        <div class="flex items-center pt-4">
             <input checked id="checked-checkbox" type="checkbox" value=""
                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2">
             <label for="checked-checkbox" class="ms-2 text-sm font-medium text-gray-900">Añadir monto inicial del
                 proximo día</label>
         </div>
 
-        <div id="montoContainer" class="mt-4">
-            <label for="monto" class="block text-gray-700">Monto inicial:</label>
-            <input type="text" id="monto" name="monto" class="px-4 py-2 border rounded-md" disabled>
-        </div>
+        <form action="{{url_for('venta.registrar_corte')}}" method="post" novalidate>
+            {{ form.csrf_token }}
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div id="montoContainer" class="mt-4">
+                {{ macros.campoNuevo(form.monto_inicial, id="monto", class="bg-white border border-gray-200
+                text-gray-900 rounded-lg
+                focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-300
+                dark:placeholder-gray-500 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500")
+                }}
+            </div>
 
-        <div class="w-48 pt-3">
-            <form
-                <button class="focus:outline-none text-white bg-yellow-500 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:focus:ring-yellow-900">
-                    Finalizar corte 
+            <div class="mt-4">
+                {{ macros.campoNuevo(form.total_caja, class="bg-white border border-gray-200 text-gray-900 rounded-lg
+                focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-50 dark:border-gray-300
+                dark:placeholder-gray-500 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500")
+                }}
+            </div>
+
+            <div class="w-ful pt-5">
+                <button
+                    class="focus:outline-none text-white bg-yellow-500 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-semibold rounded-lg text-base text-center px-5 py-2.5 me-2 mb-2 dark:focus:ring-yellow-900">
+                    Finalizar corte
                 </button>
-            </form>
-        </div>
+            </div>
+        </form>
 
         <script>
             const checkbox = document.getElementById('checked-checkbox');
@@ -207,4 +230,4 @@
         </script>
     </div>
 </div>
-{% endblock %}
+{% endblock %} 

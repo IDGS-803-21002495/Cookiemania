@@ -4,9 +4,9 @@
 
 <div class="">
     
-    <div class="p-4 border-gray-200 border-dashed rounded-lg dark:border-gray-700">
-        <h2 class="flex items-center text-3xl font-bold dark:text-gray-600">Inventario</h2>
-        <p class="mb-3 text-gray-500 dark:text-gray-400">Realice el seguimiento de la disponibilidad de sus productos</p>
+    <div class="p-4 border-gray-200 border-dashed rounded-lg">
+        <h2 class="flex items-center text-3xl font-bold">Inventario</h2>
+        <p class="mb-3 text-gray-500">Realice el seguimiento de la disponibilidad de sus productos</p>
        
         
   
@@ -176,18 +176,18 @@
 
 <!-- Modal para surtir inventario -->
 <div id="surtirModal" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-opacity-50">
-    <div class="relative p-4 w-full max-w-md bg-white rounded-lg shadow dark:bg-gray-800">
-        <div class="flex justify-between items-center pb-3 border-b dark:border-gray-600">
-            <h5 class="text-lg font-medium text-gray-900 dark:text-white">Surtir Inventario</h5>
-            <button type="button" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"data-modal-target="surtirModal" data-modal-hide="surtirModal">&times;</button>
+    <div class="relative p-4 w-full max-w-md bg-white rounded-lg shadow">
+        <div class="flex justify-between items-center pb-3 border-b">
+            <h5 class="text-lg font-medium text-gray-900">Surtir Inventario</h5>
+            <button type="button" class="text-gray-400 hover:text-gray-600"data-modal-target="surtirModal" data-modal-hide="surtirModal">&times;</button>
         </div>
         <form action="{{ url_for('inventario.agregar_al_carrito') }}" method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mt-4">
                 <input type="hidden" name="insumo_id" id="insumo_id">
                 <div class="mb-3">
-                    <label for="insumo_nombre" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Insumo</label>
-                    <input type="text" id="insumo_nombre" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700" disabled>
+                    <label for="insumo_nombre" class="block text-sm font-medium text-gray-700">Insumo</label>
+                    <input type="text" id="insumo_nombre" class="w-full p-2 border rounded bg-gray-50" disabled>
                 </div>
                 <div class="mb-3">
                     <label for="proveedor_id">Proveedor</label>
@@ -207,37 +207,37 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="cantidad" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Cantidad</label>
-                    <input type="number" id="cantidad" name="cantidad" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700" required>
+                    <label for="cantidad" class="block text-sm font-medium text-gray-700">Cantidad</label>
+                    <input type="number" id="cantidad" name="cantidad" class="w-full p-2 border rounded bg-gray-50" required>
                 </div>
                 <div class="mb-3">
-                    <label for="precio_unitario" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Precio Unitario</label>
-                    <input type="number" id="precio_unitario" name="precio_unitario" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700" required>
+                    <label for="precio_unitario" class="block text-sm font-medium text-gray-700">Precio Unitario</label>
+                    <input type="number" id="precio_unitario" name="precio_unitario" class="w-full p-2 border rounded bg-gray-50" required>
                 </div>
                 <div class="mb-3">
-                    <label for="fecha_caducidad" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fecha de Caducidad</label>
-                    <input type="date" id="fecha_caducidad" name="fecha_caducidad" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700" required>
+                    <label for="fecha_caducidad" class="block text-sm font-medium text-gray-700">Fecha de Caducidad</label>
+                    <input type="date" id="fecha_caducidad" name="fecha_caducidad" class="w-full p-2 border rounded bg-gray-50" required>
                 </div>
                 <div class="mb-3">
-                    <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Agregar al Carrito</button>
+                    <button type="submit" class="w-full bg-yellow-600 text-white p-2 rounded hover:bg-yellow-700">Agregar al Carrito</button>
                 </div>
             </div>
         </form>
     </div>
 </div>
 <div id="mermarModal" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-opacity-50">
-    <div class="relative p-4 w-full max-w-md bg-white rounded-lg shadow dark:bg-gray-800">
-        <div class="flex justify-between items-center pb-3 border-b dark:border-gray-600">
-            <h5 class="text-lg font-medium text-gray-900 dark:text-white">Mermar Inventario</h5>
-            <button type="button" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" data-modal-target="mermarModal" data-modal-hide="mermarModal">&times;</button>
+    <div class="relative p-4 w-full max-w-md bg-white rounded-lg shadow">
+        <div class="flex justify-between items-center pb-3 border-b">
+            <h5 class="text-lg font-medium text-gray-900">Mermar Inventario</h5>
+            <button type="button" class="text-gray-400 hover:text-gray-600" data-modal-target="mermarModal" data-modal-hide="mermarModal">&times;</button>
         </div>
         <form action="{{ url_for('inventario.mermar_inventario') }}" method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mt-4">
                 <input type="hidden" name="insumo_id" id="mermar_insumo_id"> <!-- Cambiado a merma -->
                 <div class="mb-3">
-                    <label for="mermar_insumo_nombre" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Insumo</label>
-                    <input type="text" id="mermar_insumo_nombre" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700" disabled>
+                    <label for="mermar_insumo_nombre" class="block text-sm font-medium text-gray-700">Insumo</label>
+                    <input type="text" id="mermar_insumo_nombre" class="w-full p-2 border rounded bg-gray-50" disabled>
                 </div>
                 <div class="mb-3">
                     <label for="presentacion_id">Presentación</label>
@@ -249,20 +249,20 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="cantidad" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Cantidad</label>
-                    <input type="number" id="cantidad" name="cantidad" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700" required>
+                    <label for="cantidad" class="block text-sm font-medium text-gray-700 ">Cantidad</label>
+                    <input type="number" id="cantidad" name="cantidad" class="w-full p-2 border rounded bg-gray-50 " required>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Mermar insumo</button>
+                <button type="submit" class="w-full bg-yellow-600 text-white p-2 rounded hover:bg-yellow-700">Mermar insumo</button>
             </div>
         </form>
     </div>
 </div>
 <!-- Modal para agregar nuevo insumo  -->
 <div id="agregarInsumoModal" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-opacity-50">
-    <div class="relative p-4 w-full max-w-md bg-white rounded-lg shadow dark:bg-gray-800 max-h-screen overflow-y-auto">
-        <div class="flex justify-between items-center pb-3 border-b dark:border-gray-600">
-            <h5 class="text-lg font-medium text-gray-900 dark:text-white">Agregar Nuevo Insumo</h5>
-            <button type="button" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" data-modal-target="agregarInsumoModal" attribute data-modal-hide="agregarInsumoModal">
+    <div class="relative p-4 w-full max-w-md bg-white rounded-lg shadow max-h-screen overflow-y-auto">
+        <div class="flex justify-between items-center pb-3 border-b">
+            <h5 class="text-lg font-medium text-gray-900">Agregar Nuevo Insumo</h5>
+            <button type="button" class="text-gray-400 hover:text-gray-600" data-modal-target="agregarInsumoModal" attribute data-modal-hide="agregarInsumoModal">
                 &times;
             </button>
         </div>
@@ -271,8 +271,8 @@
             <div class="mt-4">
                 <div>Datos Iniciales Insumo</div>
                 <div class="mb-3">
-                    <label for="nombre_insumo" class="text-sm font-medium text-gray-700 dark:text-gray-300">Insumo</label>
-                    <input type="text" id="nombre_insumo" name="nombre_insumo" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700">
+                    <label for="nombre_insumo" class="text-sm font-medium text-gray-700">Insumo</label>
+                    <input type="text" id="nombre_insumo" name="nombre_insumo" class="w-full p-2 border rounded bg-gray-50">
                 </div>
                 <div class="mb-3">
                     <label for="unidadMedida">Establezca una unidad de medida para su insumo:</label>
@@ -284,18 +284,18 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="presentacion_insumo" class="text-sm font-medium text-gray-700 dark:text-gray-300">Ingrese la presentación a comprar de su insumo (Ej: costal 50 kg , Galón de 5 ltrs, Caja 50 unidades, Bolsa 500 gr):</label>
-                    <input type="text" id="presentacion_insumo" name="presentacion" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700">
+                    <label for="presentacion_insumo" class="text-sm font-medium text-gray-700">Ingrese la presentación a comprar de su insumo (Ej: costal 50 kg , Galón de 5 ltrs, Caja 50 unidades, Bolsa 500 gr):</label>
+                    <input type="text" id="presentacion_insumo" name="presentacion" class="w-full p-2 border rounded bg-gray-50">
                 </div>
                 <div class="mb-3">
-                    <label id="cantidad_presentacion_label" for="cantidad_presentacion" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label id="cantidad_presentacion_label" for="cantidad_presentacion" class="block text-sm font-medium text-gray-700">
                         Ingrese la cantidad de (unidad de medida) de dicha presentación:
                     </label>
-                    <input type="number" id="cantidad_presentacion" name="cantidad_presentacion" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700" >
+                    <input type="number" id="cantidad_presentacion" name="cantidad_presentacion" class="w-full p-2 border rounded bg-gray-50" >
                 </div>
                 
                 <div class="mb-3">
-                    <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Agregar Insumo a mi inventario</button>
+                    <button type="submit" class="w-full bg-yellow-600 text-white p-2 rounded hover:bg-yellow-700">Agregar Insumo a mi inventario</button>
                 </div>
             </div>
         </form>
